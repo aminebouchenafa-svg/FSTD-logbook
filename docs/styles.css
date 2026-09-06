@@ -6,9 +6,12 @@
   --border: #e3e6ee;
   --text: #1c2430;
   --muted: #6b7280;
-  --accent: #e63946;
-  --accent-hover: #c62e3a;
-  --accent-soft: rgba(230, 57, 70, 0.1);
+  /* Rouge et bleu marine repris exactement de l'icône FSTD Logbook. */
+  --accent: #c7010d;
+  --accent-hover: #a3010b;
+  --accent-soft: rgba(199, 1, 13, 0.1);
+  --navy: #37495f;
+  --navy-soft: rgba(55, 73, 95, 0.08);
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.08);
   --success: #16a34a;
@@ -19,6 +22,12 @@
   --info-soft: rgba(37, 99, 235, 0.1);
   --violet: #7c3aed;
   --violet-soft: rgba(124, 58, 237, 0.1);
+  --teal: #0d9488;
+  --teal-soft: rgba(13, 148, 136, 0.1);
+  --orange: #ea580c;
+  --orange-soft: rgba(234, 88, 12, 0.1);
+  --pink: #db2777;
+  --pink-soft: rgba(219, 39, 119, 0.1);
   --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
   --shadow-md: 0 8px 24px rgba(28, 36, 48, 0.08);
   --shadow-lg: 0 20px 50px rgba(28, 36, 48, 0.14);
@@ -26,6 +35,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  font-size: 18px; /* base agrandie pour une meilleure lisibilité sur iPad */
 }
 
 body {
@@ -48,6 +61,26 @@ label {
   font-size: 0.85rem;
   color: var(--muted);
   font-weight: 600;
+}
+
+/* Libellés du formulaire d'ouverture : une couleur par champ pour les
+   différencier au premier coup d'œil. */
+.label-heure { color: var(--navy); font-weight: 800; }
+.label-tri { color: var(--accent); }
+.label-cdb { color: var(--info); }
+.label-fo { color: var(--teal); }
+
+.input-heure {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--navy);
+  text-align: center;
+}
+
+.cell-heure {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
 }
 
 input, select, textarea {
@@ -337,10 +370,11 @@ main {
 }
 
 .open-session-card .chrono {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
 }
 
 .open-session-card .crew {
@@ -397,19 +431,34 @@ tbody tr:hover {
 
 .badge {
   display: inline-block;
-  padding: 0.15rem 0.55rem;
+  padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
-.badge-qt { background: var(--info-soft); color: var(--info); }
-.badge-rec { background: var(--success-soft); color: var(--success); }
-.badge-ffs { background: var(--warning-soft); color: var(--warning); }
-.badge-fbs { background: var(--violet-soft); color: var(--violet); }
+/* Badges "importants" (qualification, simulation, créneau) : plus grands,
+   avec un léger halo lumineux derrière chaque couleur. */
+.badge-lg {
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.badge-qt { background: var(--info-soft); color: var(--info); box-shadow: 0 0 14px rgba(37, 99, 235, 0.35); }
+.badge-rec { background: var(--success-soft); color: var(--success); box-shadow: 0 0 14px rgba(22, 163, 74, 0.35); }
+.badge-ffs { background: var(--warning-soft); color: var(--warning); box-shadow: 0 0 14px rgba(217, 119, 6, 0.35); }
+.badge-fbs { background: var(--violet-soft); color: var(--violet); box-shadow: 0 0 14px rgba(124, 58, 237, 0.35); }
 .badge-ouverte { background: var(--warning-soft); color: var(--warning); }
 .badge-cloturee { background: var(--success-soft); color: var(--success); }
 .badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
+
+/* Code couleur des créneaux (S1-S5), chacun avec son halo. */
+.badge-s1 { background: var(--info-soft); color: var(--info); box-shadow: 0 0 14px rgba(37, 99, 235, 0.35); }
+.badge-s2 { background: var(--teal-soft); color: var(--teal); box-shadow: 0 0 14px rgba(13, 148, 136, 0.35); }
+.badge-s3 { background: var(--violet-soft); color: var(--violet); box-shadow: 0 0 14px rgba(124, 58, 237, 0.35); }
+.badge-s4 { background: var(--orange-soft); color: var(--orange); box-shadow: 0 0 14px rgba(234, 88, 12, 0.35); }
+.badge-s5 { background: var(--pink-soft); color: var(--pink); box-shadow: 0 0 14px rgba(219, 39, 119, 0.35); }
 
 .row-actions {
   display: flex;
@@ -534,4 +583,85 @@ tbody tr:hover {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ===== Vue chrono plein écran ===== */
+.fullscreen-chrono {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(199, 1, 13, 0.06), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(55, 73, 95, 0.06), transparent 45%),
+    var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.fullscreen-chrono[hidden] {
+  display: none;
+}
+
+.fullscreen-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0;
+}
+
+.fullscreen-chrono-value {
+  font-size: clamp(3.5rem, 16vw, 9rem);
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 0 40px rgba(199, 1, 13, 0.25);
+}
+
+.fullscreen-status {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--navy);
+}
+
+.fullscreen-slot {
+  margin-top: 0.25rem;
+}
+
+.fullscreen-crew {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  max-width: 700px;
+}
+
+.fullscreen-crew span.role-tri { color: var(--accent); }
+.fullscreen-crew span.role-cdb { color: var(--info); }
+.fullscreen-crew span.role-fo { color: var(--teal); }
+
+#fullscreen-close-session-btn {
+  margin-top: 1rem;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(199, 1, 13, 0.3);
 }

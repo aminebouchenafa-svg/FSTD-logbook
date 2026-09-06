@@ -14,6 +14,7 @@ let sessions = [];
 let selectedIds = new Set();
 let currentFilteredIds = [];
 let closingSessionId = null;
+let fullscreenSessionId = null;
 let hasSignature = false;
 let drawing = false;
 
@@ -117,6 +118,11 @@ function badgeClass(type) {
       FBS: 'badge-fbs',
       ouverte: 'badge-ouverte',
       cloturee: 'badge-cloturee',
+      S1: 'badge-s1',
+      S2: 'badge-s2',
+      S3: 'badge-s3',
+      S4: 'badge-s4',
+      S5: 'badge-s5',
     }[type] || ''
   );
 }
@@ -158,14 +164,14 @@ function renderOpenSessions() {
     .map(
       (s) => `
     <div class="open-session-card" data-id="${s.id}">
-      <div class="chrono" data-start="${s.createdAt}">00:00:00</div>
-      <div><strong>${formatDate(s.date)} — ${s.creneau}</strong></div>
+      <div class="chrono" data-start="${s.createdAt}" data-action="expand-chrono" data-id="${s.id}">00:00:00</div>
+      <div><strong>${formatDate(s.date)}</strong> <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></div>
       <div class="crew">
         TRI ${escapeHtml(s.nomTri)} · CDB ${escapeHtml(s.nomCdb)} · FO ${escapeHtml(s.nomFo)}
       </div>
       <div class="badges">
-        <span class="badge ${badgeClass(s.typeTraining)}">${s.typeTraining}</span>
-        <span class="badge ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
+        <span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span>
+        <span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
       </div>
       <button type="button" data-action="close-session" data-id="${s.id}">Clôturer</button>
     </div>`
@@ -182,6 +188,25 @@ function tickChronos() {
     const s = String(elapsed % 60).padStart(2, '0');
     el.textContent = `${h}:${m}:${s}`;
   });
+}
+
+function openFullscreenChrono(session) {
+  fullscreenSessionId = session.id;
+  document.getElementById('fullscreen-chrono-value').dataset.start = session.createdAt;
+  document.getElementById('fullscreen-slot').innerHTML =
+    `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
+  document.getElementById('fullscreen-crew').innerHTML = `
+    <span class="role-tri">TRI/TRE ${escapeHtml(session.nomTri)}</span>
+    <span class="role-cdb">CDB ${escapeHtml(session.nomCdb)}</span>
+    <span class="role-fo">FO ${escapeHtml(session.nomFo)}</span>
+  `;
+  document.getElementById('fullscreen-chrono').hidden = false;
+  tickChronos();
+}
+
+function closeFullscreenChrono() {
+  document.getElementById('fullscreen-chrono').hidden = true;
+  fullscreenSessionId = null;
 }
 
 function renderTable() {
@@ -212,15 +237,15 @@ function renderTable() {
       <td><input type="checkbox" class="row-select" data-id="${s.id}" ${selectedIds.has(s.id) ? 'checked' : ''}></td>
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
-      <td>${s.creneau}</td>
-      <td>${s.heureDebut}</td>
+      <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
+      <td class="cell-heure">${s.heureDebut}</td>
       <td>${s.heureFin || '—'}</td>
       <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
       <td>${escapeHtml(s.nomTri)}</td>
       <td>${escapeHtml(s.nomCdb)}</td>
       <td>${escapeHtml(s.nomFo)}</td>
-      <td><span class="badge ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
-      <td><span class="badge ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
+      <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
+      <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
       <td>
         <div class="row-actions">
@@ -297,6 +322,7 @@ async function handleOpenSubmit(e) {
   await putSession(session);
   document.getElementById('open-modal').hidden = true;
   await renderAll();
+  openFullscreenChrono(session);
 }
 
 // ---------- Modale : clôturer une séance ----------
@@ -628,9 +654,23 @@ function bindEvents() {
   );
 
   document.getElementById('open-sessions').addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-action="close-session"]');
-    if (!btn) return;
-    const session = sessions.find((s) => s.id === btn.dataset.id);
+    const closeBtn = e.target.closest('button[data-action="close-session"]');
+    if (closeBtn) {
+      const session = sessions.find((s) => s.id === closeBtn.dataset.id);
+      if (session) openCloseModal(session);
+      return;
+    }
+    const chrono = e.target.closest('[data-action="expand-chrono"]');
+    if (chrono) {
+      const session = sessions.find((s) => s.id === chrono.dataset.id);
+      if (session) openFullscreenChrono(session);
+    }
+  });
+
+  document.getElementById('fullscreen-close-btn').addEventListener('click', closeFullscreenChrono);
+  document.getElementById('fullscreen-close-session-btn').addEventListener('click', () => {
+    const session = sessions.find((s) => s.id === fullscreenSessionId);
+    closeFullscreenChrono();
     if (session) openCloseModal(session);
   });
 

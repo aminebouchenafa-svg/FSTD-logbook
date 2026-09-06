@@ -15,6 +15,16 @@
   <script src="vendor/jspdf.umd.min.js"></script>
 </head>
 <body>
+  <!-- ===== Vue chrono plein écran ===== -->
+  <div id="fullscreen-chrono" class="fullscreen-chrono" hidden>
+    <button type="button" id="fullscreen-close-btn" class="fullscreen-close" aria-label="Fermer">✕</button>
+    <div class="fullscreen-chrono-value chrono" id="fullscreen-chrono-value">00:00:00</div>
+    <div class="fullscreen-status">Training in progress</div>
+    <div class="fullscreen-slot" id="fullscreen-slot"></div>
+    <div class="fullscreen-crew" id="fullscreen-crew"></div>
+    <button type="button" id="fullscreen-close-session-btn">Clôturer la séance</button>
+  </div>
+
   <!-- ===== Écran d'authentification ===== -->
   <section id="auth-screen" class="auth-screen">
     <div class="auth-card">
@@ -195,24 +205,24 @@
               <option value="S5">S5 (23h00 - 03h00)</option>
             </select>
           </label>
-          <label>
+          <label class="label-heure">
             Heure de début
-            <input type="time" id="open-heureDebut" required />
+            <input type="time" id="open-heureDebut" class="input-heure" required />
           </label>
-          <label>
-            Nom du TRI
+          <label class="label-tri">
+            Nom du TRI/TRE
             <input type="text" id="open-nomTri" required />
           </label>
-          <label>
-            Nom du CDB
+          <label class="label-cdb">
+            Nom du Commandant (CDB)
             <input type="text" id="open-nomCdb" required />
           </label>
-          <label>
-            Nom du FO
+          <label class="label-fo">
+            Nom du Copilote (FO)
             <input type="text" id="open-nomFo" required />
           </label>
           <label>
-            Type de training
+            Qualification de Type (Type Rating)
             <select id="open-typeTraining" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="QT">QT</option>
@@ -220,7 +230,7 @@
             </select>
           </label>
           <label>
-            Type de séance
+            Type de simulation
             <select id="open-typeSeance" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="FFS">FFS (Full Flight Simulator)</option>
