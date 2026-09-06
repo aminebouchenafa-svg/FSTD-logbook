@@ -157,7 +157,7 @@ function renderOpenSessions() {
     .map(
       (s) => `
     <div class="open-session-card" data-id="${s.id}">
-      <div class="chrono" data-start="${s.date}T${s.heureDebut}:00">00:00:00</div>
+      <div class="chrono" data-start="${s.createdAt}">00:00:00</div>
       <div><strong>${formatDate(s.date)} — ${s.creneau}</strong></div>
       <div class="crew">
         TRI ${escapeHtml(s.nomTri)} · CDB ${escapeHtml(s.nomCdb)} · FO ${escapeHtml(s.nomFo)}
