@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fstd-logbook-static-v1';
+const CACHE_NAME = 'fstd-logbook-static-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -25,21 +25,21 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Réseau en priorité (toujours la dernière version quand la connexion est
+// là) ; le cache ne sert que de secours hors-ligne. Évite de rester coincé
+// sur une ancienne version pendant que l'appli est encore en évolution.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
