@@ -9,14 +9,19 @@ Fonctionne hors connexion (PWA installable, ex. sur iPad).
 
 Pour l'instant, un **compte unique et partagé** est utilisé par tous les TRI/TRE
 (pas d'auto-inscription : la création de compte est désactivée côté serveur).
-Un administrateur crée ou réinitialise ce compte en ligne de commande :
+
+Ce compte est créé **automatiquement au tout premier démarrage** du serveur
+(identifiant `instructeurs`, mot de passe `FSTD-Simu-2026!` par défaut — voir
+`server/index.js`). Pour changer ces valeurs par défaut, définir les variables
+d'environnement `SEED_USER_NAME` / `SEED_USER_PASSWORD` avant le premier
+démarrage, ou réinitialiser le mot de passe à tout moment en ligne de commande :
 
 ```bash
 node server/seed-user.js "<identifiant>" "<mot de passe>"
 ```
 
 Si on décide plus tard d'un compte par instructeur, il suffira de réactiver la
-route `/api/auth/register` (commentée dans `server/index.js`) ou de lancer la
+route `/api/auth/register` (désactivée dans `server/index.js`) ou de lancer la
 commande ci-dessus une fois par instructeur avec un identifiant différent.
 
 ## Cycle d'une séance
@@ -52,13 +57,24 @@ npm install
 npm start
 ```
 
-Avant la première connexion, créer le compte partagé (voir section "Comptes" ci-dessus) :
+Le compte partagé est créé automatiquement au premier démarrage (voir section
+"Comptes" ci-dessus). Ouvrir ensuite http://localhost:3000
 
-```bash
-node server/seed-user.js "<identifiant>" "<mot de passe>"
-```
+## Déploiement en ligne (pour tester / partager un lien, ex. sur Render)
 
-Puis ouvrir http://localhost:3000
+Sur [render.com](https://render.com) : "New" → "Web Service" → connecter le
+repo GitHub → choisir la branche → Render détecte Node automatiquement
+(`npm install` / `npm start`) → plan "Free" → "Create Web Service". Après
+quelques minutes, Render fournit une URL publique en HTTPS
+(ex. `https://fstd-logbook.onrender.com`), installable sur écran d'accueil
+comme n'importe quelle PWA.
+
+⚠️ Le plan gratuit de Render met le service en veille après 15 min d'inactivité
+(le premier chargement après une veille prend ~1 minute) et **son disque n'est
+pas persistant** : les séances enregistrées peuvent être perdues à chaque
+redéploiement ou redémarrage. Très bien pour tester/démontrer l'appli ; pour un
+usage réel avec des séances à conserver dans la durée, prévoir un disque
+persistant (plan payant Render, ou un autre hébergeur avec volume persistant).
 
 ### Envoi d'email (optionnel, désactivé pour l'instant)
 

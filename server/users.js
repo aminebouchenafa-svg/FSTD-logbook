@@ -91,4 +91,12 @@ function upsertForSeed(name, pin) {
   return { user, created: true };
 }
 
-module.exports = { register, verifyLogin, findById, findByName, upsertForSeed };
+// Amorce le compte partagé au tout premier démarrage (aucun utilisateur en base).
+// N'écrase jamais un mot de passe déjà choisi par un administrateur.
+function ensureDefaultUser(name, pin) {
+  if (readAll().length > 0) return false;
+  upsertForSeed(name, pin);
+  return true;
+}
+
+module.exports = { register, verifyLogin, findById, findByName, upsertForSeed, ensureDefaultUser };

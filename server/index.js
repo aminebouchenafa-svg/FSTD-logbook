@@ -169,6 +169,12 @@ app.post('/api/export/email', auth.requireAuth, async (req, res) => {
   }
 });
 
+const DEFAULT_ACCOUNT_NAME = process.env.SEED_USER_NAME || 'instructeurs';
+const DEFAULT_ACCOUNT_PASSWORD = process.env.SEED_USER_PASSWORD || 'FSTD-Simu-2026!';
+if (users.ensureDefaultUser(DEFAULT_ACCOUNT_NAME, DEFAULT_ACCOUNT_PASSWORD)) {
+  console.log(`Compte par défaut créé : ${DEFAULT_ACCOUNT_NAME}`);
+}
+
 app.listen(PORT, () => {
   console.log(`FSTD Logbook démarré sur http://localhost:${PORT}`);
 });
