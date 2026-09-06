@@ -304,7 +304,7 @@ function openOpenModal() {
   document.getElementById('open-date').value = todayIso();
   document.getElementById('open-creneau').value = '';
   document.getElementById('open-heureDebut').value = nowHm();
-  document.getElementById('open-nomTri').value = auth.user.name;
+  document.getElementById('open-nomTri').value = '';
   document.getElementById('open-nomCdb').value = '';
   document.getElementById('open-nomFo').value = '';
   document.getElementById('open-typeTraining').value = '';
@@ -433,7 +433,7 @@ async function handleCloseSubmit(e) {
 
   const candidate = await sha256Hex(`${pin}:${auth.user.id}`);
   if (candidate !== auth.pinVerifier) {
-    errorEl.textContent = 'Code PIN incorrect.';
+    errorEl.textContent = 'Mot de passe incorrect.';
     return;
   }
 
@@ -546,15 +546,6 @@ async function deleteSession(id) {
 // ---------- Init ----------
 
 function bindEvents() {
-  document.querySelectorAll('.auth-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.auth-tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById('login-form').hidden = tab.dataset.tab !== 'login';
-      document.getElementById('register-form').hidden = tab.dataset.tab !== 'register';
-    });
-  });
-
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('login-name').value.trim();
@@ -574,28 +565,6 @@ function bindEvents() {
       await syncAndRender();
     } catch {
       errorEl.textContent = 'Connexion impossible (réseau indisponible). Réessayez une fois en ligne pour votre première connexion.';
-    }
-  });
-
-  document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('register-name').value.trim();
-    const pin = document.getElementById('register-pin').value;
-    const errorEl = document.getElementById('register-error');
-    errorEl.textContent = '';
-    try {
-      const res = await apiFetch('/api/auth/register', { method: 'POST', body: JSON.stringify({ name, pin }) }, null);
-      const body = await res.json();
-      if (!res.ok) {
-        errorEl.textContent = (body.errors || []).join('\n') || 'Inscription impossible.';
-        return;
-      }
-      const pinVerifier = await sha256Hex(`${pin}:${body.user.id}`);
-      saveAuth({ token: body.token, user: body.user, pinVerifier });
-      showAppScreen();
-      await syncAndRender();
-    } catch {
-      errorEl.textContent = 'Inscription impossible hors connexion. Connectez-vous à internet pour créer votre compte la première fois.';
     }
   });
 

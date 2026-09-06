@@ -27,35 +27,17 @@
         </div>
       </div>
 
-      <div class="auth-tabs">
-        <button type="button" class="auth-tab active" data-tab="login">Se connecter</button>
-        <button type="button" class="auth-tab" data-tab="register">Créer un compte</button>
-      </div>
-
       <form id="login-form" class="auth-form">
         <label>
-          Nom
+          Identifiant
           <input type="text" id="login-name" autocomplete="username" required />
         </label>
         <label>
-          Code PIN
-          <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" required />
+          Mot de passe
+          <input type="password" id="login-pin" autocomplete="current-password" required />
         </label>
         <button type="submit">Se connecter</button>
         <p class="error" id="login-error"></p>
-      </form>
-
-      <form id="register-form" class="auth-form" hidden>
-        <label>
-          Nom complet
-          <input type="text" id="register-name" autocomplete="name" required />
-        </label>
-        <label>
-          Code PIN (4 chiffres min.)
-          <input type="password" id="register-pin" inputmode="numeric" pattern="[0-9]*" minlength="4" autocomplete="new-password" required />
-        </label>
-        <button type="submit">Créer mon compte</button>
-        <p class="error" id="register-error"></p>
       </form>
 
       <p class="offline-hint">Une fois connecté(e), l'application reste utilisable hors connexion.</p>
@@ -216,8 +198,8 @@
             <input type="time" id="close-heureFin" required />
           </label>
           <label>
-            Code PIN (confirmation d'identité)
-            <input type="password" id="close-pin" inputmode="numeric" pattern="[0-9]*" required />
+            Mot de passe (confirmation de signature)
+            <input type="password" id="close-pin" required />
           </label>
         </div>
         <label class="full-width">

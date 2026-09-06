@@ -45,22 +45,18 @@ function validateClose(body) {
 
 // ---- Auth ----
 
+// L'auto-inscription est désactivée : les comptes sont créés par un administrateur
+// via `node server/seed-user.js` (voir README). La logique reste dans users.register
+// pour être réactivée facilement si des comptes individuels par instructeur sont décidés.
 app.post('/api/auth/register', (req, res) => {
-  const { name, pin } = req.body || {};
-  try {
-    const user = users.register(name, pin);
-    const token = auth.createToken(user);
-    res.status(201).json({ token, user: { id: user.id, name: user.name } });
-  } catch (err) {
-    res.status(400).json({ errors: [err.message] });
-  }
+  res.status(403).json({ errors: ["La création de compte est désactivée. Contactez l'administrateur du registre."] });
 });
 
 app.post('/api/auth/login', (req, res) => {
   const { name, pin } = req.body || {};
   const user = users.verifyLogin(name, pin);
   if (!user) {
-    return res.status(401).json({ errors: ['Nom ou code PIN incorrect.'] });
+    return res.status(401).json({ errors: ['Identifiant ou mot de passe incorrect.'] });
   }
   const token = auth.createToken(user);
   res.json({ token, user: { id: user.id, name: user.name } });

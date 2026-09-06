@@ -60,4 +60,35 @@ function verifyLogin(name, pin) {
   return user;
 }
 
-module.exports = { register, verifyLogin, findById, findByName };
+// Réservé à l'administration en ligne de commande (server/seed-user.js) : crée le
+// compte s'il n'existe pas, ou réinitialise son mot de passe s'il existe déjà.
+// N'est jamais exposé via l'API HTTP.
+function upsertForSeed(name, pin) {
+  const trimmed = String(name || '').trim();
+  if (!trimmed) throw new Error('Le nom est obligatoire.');
+  if (!pin || String(pin).length < 6) throw new Error('Le mot de passe doit contenir au moins 6 caractères.');
+
+  const { salt, hash } = auth.hashPin(pin);
+  const users = readAll();
+  const existing = users.find((u) => u.name.toLowerCase() === trimmed.toLowerCase());
+
+  if (existing) {
+    existing.salt = salt;
+    existing.hash = hash;
+    writeAll(users);
+    return { user: existing, created: false };
+  }
+
+  const user = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    name: trimmed,
+    salt,
+    hash,
+    createdAt: new Date().toISOString(),
+  };
+  users.push(user);
+  writeAll(users);
+  return { user, created: true };
+}
+
+module.exports = { register, verifyLogin, findById, findByName, upsertForSeed };

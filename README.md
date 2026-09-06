@@ -5,16 +5,34 @@ de séance avec chrono, clôture avec signature électronique et remarques,
 archivage PDF (par séance ou registre complet) envoyable par email.
 Fonctionne hors connexion (PWA installable, ex. sur iPad).
 
+## Comptes
+
+Pour l'instant, un **compte unique et partagé** est utilisé par tous les TRI/TRE
+(pas d'auto-inscription : la création de compte est désactivée côté serveur).
+Un administrateur crée ou réinitialise ce compte en ligne de commande :
+
+```bash
+node server/seed-user.js "<identifiant>" "<mot de passe>"
+```
+
+Si on décide plus tard d'un compte par instructeur, il suffira de réactiver la
+route `/api/auth/register` (commentée dans `server/index.js`) ou de lancer la
+commande ci-dessus une fois par instructeur avec un identifiant différent.
+
 ## Cycle d'une séance
 
-1. **Connexion** — chaque personne (TRI) crée un compte (nom + code PIN) ou se connecte.
+1. **Connexion** — avec l'identifiant et le mot de passe du compte du registre.
 2. **Démarrer une séance** — on saisit date, créneau, heure de début, TRI/CDB/FO,
    type de training (`QT`/`REC`) et type de séance (`FFS`/`FBS`). Un chrono démarre.
+   (Comme le compte est partagé, le nom du TRI doit être saisi manuellement à
+   chaque séance — il n'est pas déduit automatiquement de la connexion.)
 3. **Clôturer la séance** — l'instructeur renseigne l'heure de fin, des remarques,
-   confirme son code PIN et **signe électroniquement** (au doigt/stylet sur l'écran).
+   confirme le mot de passe et **signe électroniquement** (au doigt/stylet sur l'écran).
    La séance passe au statut « Clôturée » et devient archivée dans le registre.
 4. **Archivage** — depuis le registre, on peut télécharger le PDF d'une séance,
-   exporter le registre complet (ou filtré par période) en PDF, ou l'envoyer par email.
+   ou exporter le registre complet (ou filtré par période) en PDF. L'envoi par
+   email est prêt côté code mais désactivé pour l'instant (voir plus bas) :
+   on télécharge et on envoie le PDF manuellement.
 
 ## Fonctionnement hors-ligne
 
@@ -34,11 +52,18 @@ npm install
 npm start
 ```
 
+Avant la première connexion, créer le compte partagé (voir section "Comptes" ci-dessus) :
+
+```bash
+node server/seed-user.js "<identifiant>" "<mot de passe>"
+```
+
 Puis ouvrir http://localhost:3000
 
-### Envoi d'email (optionnel)
+### Envoi d'email (optionnel, désactivé pour l'instant)
 
-Pour activer le bouton "Envoyer par email", configurer un compte SMTP via variables
+Le téléchargement manuel du PDF est utilisé pour le moment. Pour activer plus
+tard le bouton "Envoyer par email", configurer un compte SMTP via variables
 d'environnement avant de lancer le serveur :
 
 ```bash
@@ -65,7 +90,8 @@ export AUTH_SECRET="une-longue-chaine-secrete-aleatoire"
 
 - Backend Node/Express, données persistées dans `server/data/*.json`
   (registre partagé entre tous les utilisateurs qui accèdent au serveur).
-- Authentification par nom + code PIN (jeton signé, valable 30 jours).
+- Authentification par identifiant + mot de passe (jeton signé, valable 30 jours),
+  comptes créés uniquement via `server/seed-user.js` (auto-inscription désactivée).
 - PDF généré côté serveur avec `pdfkit`, email avec `nodemailer`.
 - Frontend en HTML/CSS/JS natif (ES modules), sans étape de build.
 - PWA : `manifest.json` + `sw.js` (cache de l'app pour usage hors-ligne),
