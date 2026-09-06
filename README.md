@@ -10,11 +10,19 @@ Fonctionne hors connexion (PWA installable, ex. sur iPad).
 Pour l'instant, un **compte unique et partagé** est utilisé par tous les TRI/TRE
 (pas d'auto-inscription : la création de compte est désactivée côté serveur).
 
-Ce compte est créé **automatiquement au tout premier démarrage** du serveur
-(identifiant `instructeurs`, mot de passe `FSTD-Simu-2026!` par défaut — voir
-`server/index.js`). Pour changer ces valeurs par défaut, définir les variables
-d'environnement `SEED_USER_NAME` / `SEED_USER_PASSWORD` avant le premier
-démarrage, ou réinitialiser le mot de passe à tout moment en ligne de commande :
+Deux comptes sont créés **automatiquement au tout premier démarrage** du serveur
+— un principal et un de secours (même registre partagé pour les deux, au cas où
+le mot de passe principal poserait problème) :
+
+| Rôle | Identifiant | Mot de passe |
+|---|---|---|
+| Principal | `instructeurs` | `FSTD-Simu-2026!` |
+| Secours | `instructeurs-secours` | `FSTD-Reserve-2026!` |
+
+Ces valeurs par défaut sont dans `server/index.js`. Pour les changer, définir les
+variables d'environnement `SEED_USER_NAME`/`SEED_USER_PASSWORD` (compte principal)
+et `SEED_BACKUP_USER_NAME`/`SEED_BACKUP_USER_PASSWORD` (compte de secours) avant
+le tout premier démarrage, ou réinitialiser un mot de passe à tout moment :
 
 ```bash
 node server/seed-user.js "<identifiant>" "<mot de passe>"

@@ -91,12 +91,12 @@ function upsertForSeed(name, pin) {
   return { user, created: true };
 }
 
-// Amorce le compte partagé au tout premier démarrage (aucun utilisateur en base).
-// N'écrase jamais un mot de passe déjà choisi par un administrateur.
-function ensureDefaultUser(name, pin) {
+// Amorce les comptes partagés (principal + secours) au tout premier démarrage
+// (aucun utilisateur en base). N'écrase jamais des comptes déjà en place.
+function ensureDefaultUsers(accounts) {
   if (readAll().length > 0) return false;
-  upsertForSeed(name, pin);
+  accounts.forEach(({ name, pin }) => upsertForSeed(name, pin));
   return true;
 }
 
-module.exports = { register, verifyLogin, findById, findByName, upsertForSeed, ensureDefaultUser };
+module.exports = { register, verifyLogin, findById, findByName, upsertForSeed, ensureDefaultUsers };

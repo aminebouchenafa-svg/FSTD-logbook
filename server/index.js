@@ -169,10 +169,14 @@ app.post('/api/export/email', auth.requireAuth, async (req, res) => {
   }
 });
 
-const DEFAULT_ACCOUNT_NAME = process.env.SEED_USER_NAME || 'instructeurs';
-const DEFAULT_ACCOUNT_PASSWORD = process.env.SEED_USER_PASSWORD || 'FSTD-Simu-2026!';
-if (users.ensureDefaultUser(DEFAULT_ACCOUNT_NAME, DEFAULT_ACCOUNT_PASSWORD)) {
-  console.log(`Compte par défaut créé : ${DEFAULT_ACCOUNT_NAME}`);
+// Deux comptes partagés créés au premier démarrage : un principal et un de secours
+// (même registre pour les deux, au cas où le mot de passe principal poserait problème).
+const DEFAULT_ACCOUNTS = [
+  { name: process.env.SEED_USER_NAME || 'instructeurs', pin: process.env.SEED_USER_PASSWORD || 'FSTD-Simu-2026!' },
+  { name: process.env.SEED_BACKUP_USER_NAME || 'instructeurs-secours', pin: process.env.SEED_BACKUP_USER_PASSWORD || 'FSTD-Reserve-2026!' },
+];
+if (users.ensureDefaultUsers(DEFAULT_ACCOUNTS)) {
+  console.log('Comptes par défaut créés :', DEFAULT_ACCOUNTS.map((a) => a.name).join(', '));
 }
 
 app.listen(PORT, () => {
