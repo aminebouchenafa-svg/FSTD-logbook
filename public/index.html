@@ -2,31 +2,159 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FSTD Logbook — Registre des séances simulateur</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#101828" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FSTD Logbook" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="app-header">
-    <h1>Registre des séances simulateur</h1>
-    <p class="subtitle">FSTD Logbook</p>
-  </header>
+  <div id="sync-banner" class="sync-banner" hidden></div>
 
-  <main>
-    <section class="card form-card">
-      <h2 id="form-title">Nouvelle séance</h2>
-      <form id="session-form">
-        <input type="hidden" id="session-id" />
+  <!-- ===== Écran d'authentification ===== -->
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand">
+        <img src="icons/icon-192.png" alt="" class="brand-icon" />
+        <div>
+          <h1>FSTD Logbook</h1>
+          <p class="subtitle">Registre des séances simulateur</p>
+        </div>
+      </div>
 
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-tab="login">Se connecter</button>
+        <button type="button" class="auth-tab" data-tab="register">Créer un compte</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label>
+          Nom
+          <input type="text" id="login-name" autocomplete="username" required />
+        </label>
+        <label>
+          Code PIN
+          <input type="password" id="login-pin" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" required />
+        </label>
+        <button type="submit">Se connecter</button>
+        <p class="error" id="login-error"></p>
+      </form>
+
+      <form id="register-form" class="auth-form" hidden>
+        <label>
+          Nom complet
+          <input type="text" id="register-name" autocomplete="name" required />
+        </label>
+        <label>
+          Code PIN (4 chiffres min.)
+          <input type="password" id="register-pin" inputmode="numeric" pattern="[0-9]*" minlength="4" autocomplete="new-password" required />
+        </label>
+        <button type="submit">Créer mon compte</button>
+        <p class="error" id="register-error"></p>
+      </form>
+
+      <p class="offline-hint">Une fois connecté(e), l'application reste utilisable hors connexion.</p>
+    </div>
+  </section>
+
+  <!-- ===== Application principale ===== -->
+  <div id="app-screen" hidden>
+    <header class="app-header">
+      <div>
+        <h1>Registre des séances simulateur</h1>
+        <p class="subtitle" id="user-badge"></p>
+      </div>
+      <div class="header-actions">
+        <span id="sync-status" class="sync-status">●</span>
+        <button type="button" id="logout-btn" class="secondary">Déconnexion</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="section-header">
+          <h2>Séances en cours</h2>
+          <button type="button" id="open-session-btn">+ Démarrer une séance</button>
+        </div>
+        <div id="open-sessions" class="open-sessions">
+          <p class="empty">Aucune séance en cours.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Registre</h2>
+          <input type="search" id="search" placeholder="Rechercher (nom, date, type…)" />
+        </div>
+        <div class="table-scroll">
+          <table id="sessions-table">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Date</th>
+                <th>Créneau</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>TRI</th>
+                <th>CDB</th>
+                <th>FO</th>
+                <th>Training</th>
+                <th>Séance</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sessions-body">
+              <tr><td colspan="12" class="empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Archivage</h2>
+        <p class="hint">Génère un PDF du registre (toutes les séances, ou filtré par période) pour l'archivage ou l'envoi par email.</p>
+        <div class="export-row">
+          <label>
+            Du
+            <input type="date" id="export-from" />
+          </label>
+          <label>
+            Au
+            <input type="date" id="export-to" />
+          </label>
+          <button type="button" id="export-pdf-btn" class="secondary">Télécharger le PDF</button>
+        </div>
+        <div class="export-row">
+          <label class="grow">
+            Envoyer par email à
+            <input type="email" id="export-email" placeholder="adresse@compagnie.com" />
+          </label>
+          <button type="button" id="export-email-btn" class="secondary">Envoyer</button>
+        </div>
+        <p id="export-message" class="hint"></p>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== Modale : démarrer une séance ===== -->
+  <div id="open-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2>Démarrer une séance</h2>
+      <form id="open-form">
         <div class="form-grid">
           <label>
             Date de la séance
-            <input type="date" id="date" required />
+            <input type="date" id="open-date" required />
           </label>
-
           <label>
             Créneau
-            <select id="creneau" required>
+            <select id="open-creneau" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="Matin">Matin</option>
               <option value="Après-midi">Après-midi</option>
@@ -34,88 +162,86 @@
               <option value="Nuit">Nuit</option>
             </select>
           </label>
-
           <label>
             Heure de début
-            <input type="time" id="heureDebut" required />
+            <input type="time" id="open-heureDebut" required />
           </label>
-
-          <label>
-            Heure de fin
-            <input type="time" id="heureFin" required />
-          </label>
-
           <label>
             Nom du TRI
-            <input type="text" id="nomTri" placeholder="Nom de l'instructeur" required />
+            <input type="text" id="open-nomTri" required />
           </label>
-
           <label>
             Nom du CDB
-            <input type="text" id="nomCdb" placeholder="Nom du commandant de bord" required />
+            <input type="text" id="open-nomCdb" required />
           </label>
-
           <label>
             Nom du FO
-            <input type="text" id="nomFo" placeholder="Nom de l'officier pilote" required />
+            <input type="text" id="open-nomFo" required />
           </label>
-
           <label>
             Type de training
-            <select id="typeTraining" required>
+            <select id="open-typeTraining" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="QT">QT</option>
               <option value="REC">REC (récurrent)</option>
             </select>
           </label>
-
           <label>
             Type de séance
-            <select id="typeSeance" required>
+            <select id="open-typeSeance" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="FFS">FFS (Full Flight Simulator)</option>
               <option value="FBS">FBS (Fixed Base Simulator)</option>
             </select>
           </label>
         </div>
-
-        <div class="form-actions">
-          <button type="submit" id="submit-btn">Enregistrer la séance</button>
-          <button type="button" id="cancel-edit" class="secondary" hidden>Annuler</button>
+        <p class="error" id="open-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Annuler</button>
+          <button type="submit">Démarrer le chrono</button>
         </div>
-        <p id="form-error" class="error" role="alert"></p>
       </form>
-    </section>
+    </div>
+  </div>
 
-    <section class="card table-card">
-      <div class="table-header">
-        <h2>Séances enregistrées</h2>
-        <input type="search" id="search" placeholder="Rechercher (nom, date, type…)" />
-      </div>
-      <div class="table-scroll">
-        <table id="sessions-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Créneau</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>TRI</th>
-              <th>CDB</th>
-              <th>FO</th>
-              <th>Training</th>
-              <th>Séance</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="sessions-body">
-            <tr><td colspan="10" class="empty">Chargement…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+  <!-- ===== Modale : clôturer une séance ===== -->
+  <div id="close-modal" class="modal-overlay" hidden>
+    <div class="modal modal-wide">
+      <h2>Clôturer la séance</h2>
+      <p id="close-summary" class="summary"></p>
+      <form id="close-form">
+        <div class="form-grid">
+          <label>
+            Heure de fin
+            <input type="time" id="close-heureFin" required />
+          </label>
+          <label>
+            Code PIN (confirmation d'identité)
+            <input type="password" id="close-pin" inputmode="numeric" pattern="[0-9]*" required />
+          </label>
+        </div>
+        <label class="full-width">
+          Remarques
+          <textarea id="close-remarques" rows="3" placeholder="Observations sur la séance…"></textarea>
+        </label>
 
-  <script src="app.js"></script>
+        <div class="full-width">
+          <span class="field-label">Signature électronique</span>
+          <div class="signature-wrap">
+            <canvas id="signature-pad" width="600" height="180"></canvas>
+          </div>
+          <button type="button" id="clear-signature" class="secondary small">Effacer la signature</button>
+        </div>
+
+        <p class="error" id="close-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Annuler</button>
+          <button type="submit">Signer et clôturer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>

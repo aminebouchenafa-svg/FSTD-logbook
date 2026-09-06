@@ -10,6 +10,8 @@
     "dev": "node server/index.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "nodemailer": "^10.0.0",
+    "pdfkit": "^0.20.2"
   }
 }

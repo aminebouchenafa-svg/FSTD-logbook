@@ -3,21 +3,18 @@ const path = require('path');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'sessions.json');
+const COUNTER_FILE = path.join(DATA_DIR, 'counter.json');
 
 function ensureStore() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, '[]', 'utf8');
-  }
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, '[]', 'utf8');
+  if (!fs.existsSync(COUNTER_FILE)) fs.writeFileSync(COUNTER_FILE, JSON.stringify({ next: 1 }), 'utf8');
 }
 
 function readAll() {
   ensureStore();
-  const raw = fs.readFileSync(DATA_FILE, 'utf8');
   try {
-    return JSON.parse(raw);
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
   } catch {
     return [];
   }
@@ -28,19 +25,54 @@ function writeAll(sessions) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(sessions, null, 2), 'utf8');
 }
 
+function nextNumero() {
+  ensureStore();
+  const counter = JSON.parse(fs.readFileSync(COUNTER_FILE, 'utf8'));
+  const numero = counter.next;
+  fs.writeFileSync(COUNTER_FILE, JSON.stringify({ next: numero + 1 }), 'utf8');
+  return numero;
+}
+
 function listSessions() {
   return readAll().sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-    return (a.heureDebut || '').localeCompare(b.heureDebut || '');
+    return (b.heureDebut || '').localeCompare(a.heureDebut || '');
   });
 }
 
-function createSession(data) {
+function getSession(id) {
+  return readAll().find((s) => s.id === id) || null;
+}
+
+function createSession(data, user) {
   const sessions = readAll();
+
+  // Autorise un id fourni par le client (créé hors-ligne) pour éviter les doublons à la resynchronisation.
+  const id = data.id && !sessions.some((s) => s.id === data.id)
+    ? data.id
+    : Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
   const session = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+    id,
+    numero: nextNumero(),
+    date: data.date,
+    creneau: data.creneau,
+    heureDebut: data.heureDebut,
+    heureFin: null,
+    nomTri: data.nomTri,
+    nomCdb: data.nomCdb,
+    nomFo: data.nomFo,
+    typeTraining: data.typeTraining,
+    typeSeance: data.typeSeance,
+    status: 'ouverte',
+    remarques: '',
+    signature: null,
+    openedBy: user.id,
+    openedByName: user.name,
+    closedBy: null,
+    closedByName: null,
     createdAt: new Date().toISOString(),
-    ...data,
+    closedAt: null,
   };
   sessions.push(session);
   writeAll(sessions);
@@ -51,7 +83,29 @@ function updateSession(id, data) {
   const sessions = readAll();
   const index = sessions.findIndex((s) => s.id === id);
   if (index === -1) return null;
-  sessions[index] = { ...sessions[index], ...data, id };
+  const editable = (({ date, creneau, heureDebut, nomTri, nomCdb, nomFo, typeTraining, typeSeance }) => (
+    { date, creneau, heureDebut, nomTri, nomCdb, nomFo, typeTraining, typeSeance }
+  ))(data);
+  Object.keys(editable).forEach((k) => editable[k] === undefined && delete editable[k]);
+  sessions[index] = { ...sessions[index], ...editable };
+  writeAll(sessions);
+  return sessions[index];
+}
+
+function closeSession(id, { heureFin, remarques, signature }, user) {
+  const sessions = readAll();
+  const index = sessions.findIndex((s) => s.id === id);
+  if (index === -1) return null;
+  sessions[index] = {
+    ...sessions[index],
+    heureFin,
+    remarques: remarques || '',
+    signature: signature || null,
+    status: 'cloturee',
+    closedBy: user.id,
+    closedByName: user.name,
+    closedAt: new Date().toISOString(),
+  };
   writeAll(sessions);
   return sessions[index];
 }
@@ -65,4 +119,11 @@ function deleteSession(id) {
   return true;
 }
 
-module.exports = { listSessions, createSession, updateSession, deleteSession };
+module.exports = {
+  listSessions,
+  getSession,
+  createSession,
+  updateSession,
+  closeSession,
+  deleteSession,
+};
