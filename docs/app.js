@@ -3,7 +3,7 @@
 // registre, non partagé avec les autres. Le mot de passe est vérifié côté
 // client (pas de vraie sécurité, juste un verrou d'accès simple).
 
-const PASSWORDS = ['FSTD-Simu-2026!', 'FSTD-Reserve-2026!'];
+const PASSWORDS = ['SIM-boeing737'];
 const AUTH_KEY = 'fstd_static_unlocked';
 const COUNTER_KEY = 'fstd_static_counter';
 const DB_NAME = 'fstd-logbook-static';

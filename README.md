@@ -82,8 +82,8 @@ commande ci-dessus une fois par instructeur avec un identifiant différent.
 4. **Save**. Après une minute ou deux, GitHub affiche le lien en haut de la
    page Settings → Pages (du type `https://<compte>.github.io/<dépôt>/`).
 5. Ouvrir ce lien sur l'iPad dans Safari, se connecter avec le mot de passe
-   (`FSTD-Simu-2026!`, ou `FSTD-Reserve-2026!` en secours), puis Partager →
-   "Sur l'écran d'accueil" pour l'installer comme une vraie application.
+   (`SIM-boeing737`), puis Partager → "Sur l'écran d'accueil" pour
+   l'installer comme une vraie application.
 
 **Important** : cette version stocke les séances **uniquement dans le
 navigateur de cet appareil** (aucun serveur, donc aucun partage entre
