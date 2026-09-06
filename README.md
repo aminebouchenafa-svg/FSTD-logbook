@@ -1,11 +1,25 @@
 # FSTD Logbook 737 NG
 
-Registre des séances simulateur Air Algérie (flotte 737 NG) : authentification par instructeur, ouverture
-de séance avec chrono, clôture avec signature électronique et remarques,
-archivage PDF (par séance ou registre complet) envoyable par email.
-Fonctionne hors connexion (PWA installable, ex. sur iPad).
+Registre des séances simulateur Air Algérie (flotte 737 NG) : authentification,
+ouverture de séance avec chrono, clôture avec signature électronique et
+remarques, archivage PDF. Fonctionne hors connexion (PWA installable, ex. sur
+iPad).
 
-## Comptes
+## Deux versions dans ce dépôt
+
+| | `public/` + `server/` | `docs/` |
+|---|---|---|
+| Hébergement | Un serveur Node (ex. Render) | **GitHub Pages** (Settings → Pages) |
+| Registre | **Partagé** entre tous les appareils | **Local à chaque appareil** (pas de partage) |
+| Comptes | Comptes serveur (voir ci-dessous) | Un seul mot de passe, vérifié dans le navigateur |
+| PDF | Généré côté serveur, + envoi email (optionnel) | Généré dans le navigateur (jsPDF), partage via Mail/AirDrop |
+
+La version `docs/` est celle demandée pour avoir un lien directement sur
+github.com, sans hébergeur externe. Voir "Déploiement via GitHub Pages"
+plus bas. La version serveur reste disponible si un registre vraiment
+partagé entre plusieurs iPads redevient nécessaire.
+
+## Comptes (version serveur — `public/` + `server/`)
 
 Pour l'instant, un **compte unique et partagé** est utilisé par tous les TRI/TRE
 (pas d'auto-inscription : la création de compte est désactivée côté serveur).
@@ -59,7 +73,32 @@ commande ci-dessus une fois par instructeur avec un identifiant différent.
    email est prêt côté code mais désactivé pour l'instant (voir plus bas) :
    on télécharge et on envoie le PDF manuellement.
 
-## Fonctionnement hors-ligne
+## Déploiement via GitHub Pages (version `docs/`)
+
+1. Sur GitHub, ouvrir ce dépôt → **Settings** → **Pages**.
+2. Sous "Build and deployment" → "Source" : choisir **Deploy from a branch**.
+3. Branche : sélectionner cette branche (`claude/simulator-session-registry-app-n9bw98`,
+   ou `main` si le contenu a été fusionné) — dossier **`/docs`**.
+4. **Save**. Après une minute ou deux, GitHub affiche le lien en haut de la
+   page Settings → Pages (du type `https://<compte>.github.io/<dépôt>/`).
+5. Ouvrir ce lien sur l'iPad dans Safari, se connecter avec le mot de passe
+   (`FSTD-Simu-2026!`, ou `FSTD-Reserve-2026!` en secours), puis Partager →
+   "Sur l'écran d'accueil" pour l'installer comme une vraie application.
+
+**Important** : cette version stocke les séances **uniquement dans le
+navigateur de cet appareil** (aucun serveur, donc aucun partage entre
+plusieurs iPads/instructeurs). Le mot de passe est vérifié directement dans
+le code de la page — pratique pour filtrer les curieux, mais ce n'est pas une
+vraie sécurité (visible par quiconque inspecte le code source de la page).
+Le PDF est généré directement dans le navigateur (bibliothèque `jsPDF`,
+embarquée dans `docs/vendor/`, pas de dépendance à un service externe) ; pour
+l'envoyer par email, utiliser le bouton de partage puis choisir "Mail" dans
+le menu natif (comme AirDrop ou Messages).
+
+Pour changer le(s) mot(s) de passe : modifier le tableau `PASSWORDS` en haut
+de `docs/app.js`.
+
+## Fonctionnement hors-ligne (version serveur)
 
 Une fois connecté(e), l'application reste utilisable sans réseau (utile en
 déplacement / à l'étranger) :
@@ -70,7 +109,7 @@ déplacement / à l'étranger) :
 - Sur iPad : ouvrir l'app dans Safari puis "Partager → Sur l'écran d'accueil" pour
   l'installer comme une vraie application (PWA).
 
-## Démarrer l'application
+## Démarrer l'application (version serveur)
 
 ```bash
 npm install
@@ -80,7 +119,7 @@ npm start
 Le compte partagé est créé automatiquement au premier démarrage (voir section
 "Comptes" ci-dessus). Ouvrir ensuite http://localhost:3000
 
-## Déploiement en ligne (pour tester / partager un lien, ex. sur Render)
+## Déploiement en ligne de la version serveur (alternative à GitHub Pages, ex. sur Render)
 
 Sur [render.com](https://render.com) : "New" → "Web Service" → connecter le
 repo GitHub → choisir la branche → Render détecte Node automatiquement

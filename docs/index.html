@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FSTD Logbook 737 NG</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#0a0e17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="FSTD Logbook 737 NG" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="vendor/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <!-- ===== Écran d'authentification ===== -->
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand">
+        <img src="branding/air-algerie-logo.png" alt="Air Algérie" class="brand-logo" />
+      </div>
+      <div class="brand-title">
+        <h1>FSTD Logbook 737 NG</h1>
+        <p class="subtitle">Registre des séances simulateur (local à cet appareil)</p>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label>
+          Mot de passe d'accès
+          <input type="password" id="login-pin" autocomplete="current-password" required />
+        </label>
+        <button type="submit">Se connecter</button>
+        <p class="error" id="login-error"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Application principale ===== -->
+  <div id="app-screen" hidden>
+    <header class="app-header">
+      <div class="app-header-brand">
+        <img src="branding/air-algerie-logo.png" alt="Air Algérie" class="app-header-logo" />
+        <div>
+          <h1>FSTD Logbook 737 NG</h1>
+          <p class="subtitle">Registre local à cet appareil</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="logout-btn" class="secondary">Verrouiller</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <div class="section-header">
+          <h2>Séances en cours</h2>
+          <button type="button" id="open-session-btn">+ Démarrer une séance</button>
+        </div>
+        <div id="open-sessions" class="open-sessions">
+          <p class="empty">Aucune séance en cours.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Registre</h2>
+          <input type="search" id="search" placeholder="Rechercher (nom, date, type…)" />
+        </div>
+        <div id="selection-bar" class="selection-bar" hidden>
+          <span id="selection-count"></span>
+          <button type="button" id="share-selection-btn" class="secondary small">Partager la sélection (PDF)</button>
+          <button type="button" id="clear-selection-btn" class="secondary small">Annuler</button>
+        </div>
+        <div class="table-scroll">
+          <table id="sessions-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="select-all" /></th>
+                <th>N°</th>
+                <th>Date</th>
+                <th>Créneau</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Durée</th>
+                <th>TRI</th>
+                <th>CDB</th>
+                <th>FO</th>
+                <th>Training</th>
+                <th>Séance</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sessions-body">
+              <tr><td colspan="14" class="empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Archivage</h2>
+        <p class="hint">
+          Génère un PDF du registre de cet appareil (toutes les séances, ou filtré par période).
+          Utilise le bouton de partage pour l'envoyer par Mail, AirDrop, Messages…
+        </p>
+        <div class="export-row">
+          <label>
+            Du
+            <input type="date" id="export-from" />
+          </label>
+          <label>
+            Au
+            <input type="date" id="export-to" />
+          </label>
+          <button type="button" id="export-pdf-btn" class="secondary">Partager le PDF</button>
+        </div>
+        <p id="export-message" class="hint"></p>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== Modale : démarrer une séance ===== -->
+  <div id="open-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2>Démarrer une séance</h2>
+      <form id="open-form">
+        <div class="form-grid">
+          <label>
+            Date de la séance
+            <input type="date" id="open-date" required />
+          </label>
+          <label>
+            Créneau
+            <select id="open-creneau" required>
+              <option value="" disabled selected>Choisir…</option>
+              <option value="S1">S1 (06h00 - 10h00)</option>
+              <option value="S2">S2 (10h15 - 14h15)</option>
+              <option value="S3">S3 (14h30 - 18h30)</option>
+              <option value="S4">S4 (18h45 - 22h45)</option>
+              <option value="S5">S5 (23h00 - 03h00)</option>
+            </select>
+          </label>
+          <label>
+            Heure de début
+            <input type="time" id="open-heureDebut" required />
+          </label>
+          <label>
+            Nom du TRI
+            <input type="text" id="open-nomTri" required />
+          </label>
+          <label>
+            Nom du CDB
+            <input type="text" id="open-nomCdb" required />
+          </label>
+          <label>
+            Nom du FO
+            <input type="text" id="open-nomFo" required />
+          </label>
+          <label>
+            Type de training
+            <select id="open-typeTraining" required>
+              <option value="" disabled selected>Choisir…</option>
+              <option value="QT">QT</option>
+              <option value="REC">REC (récurrent)</option>
+            </select>
+          </label>
+          <label>
+            Type de séance
+            <select id="open-typeSeance" required>
+              <option value="" disabled selected>Choisir…</option>
+              <option value="FFS">FFS (Full Flight Simulator)</option>
+              <option value="FBS">FBS (Fixed Base Simulator)</option>
+            </select>
+          </label>
+        </div>
+        <p class="error" id="open-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Annuler</button>
+          <button type="submit">Démarrer le chrono</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Modale : clôturer une séance ===== -->
+  <div id="close-modal" class="modal-overlay" hidden>
+    <div class="modal modal-wide">
+      <h2>Clôturer la séance</h2>
+      <p id="close-summary" class="summary"></p>
+      <form id="close-form">
+        <div class="form-grid">
+          <label>
+            Heure de fin
+            <input type="time" id="close-heureFin" required />
+          </label>
+        </div>
+        <label class="full-width">
+          Remarques
+          <textarea id="close-remarques" rows="3" placeholder="Observations sur la séance…"></textarea>
+        </label>
+
+        <div class="full-width">
+          <span class="field-label">Signature électronique</span>
+          <div class="signature-wrap">
+            <canvas id="signature-pad" width="600" height="180"></canvas>
+          </div>
+          <button type="button" id="clear-signature" class="secondary small">Effacer la signature</button>
+        </div>
+
+        <p class="error" id="close-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Annuler</button>
+          <button type="submit">Signer et clôturer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
