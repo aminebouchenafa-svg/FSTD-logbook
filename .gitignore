@@ -1,0 +1,4 @@
+node_modules/
+server/data/sessions.json
+*.log
+.DS_Store
