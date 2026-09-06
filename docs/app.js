@@ -4,7 +4,7 @@
 // client (pas de vraie sécurité, juste un verrou d'accès simple).
 
 const PASSWORDS = ['SIM-boeing737'];
-const ADMIN_CODE = '482913';
+const ADMIN_CODE = '737800';
 const AUTH_KEY = 'fstd_static_unlocked';
 const COUNTER_KEY = 'fstd_static_counter';
 const DB_NAME = 'fstd-logbook-static';
