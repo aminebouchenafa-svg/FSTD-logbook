@@ -4,6 +4,7 @@
 // client (pas de vraie sécurité, juste un verrou d'accès simple).
 
 const PASSWORDS = ['SIM-boeing737'];
+const ADMIN_CODE = '482913';
 const AUTH_KEY = 'fstd_static_unlocked';
 const COUNTER_KEY = 'fstd_static_counter';
 const DB_NAME = 'fstd-logbook-static';
@@ -555,6 +556,43 @@ async function deleteSession(id) {
   await renderAll();
 }
 
+// ---------- Administration (accès séparé, supprime même les séances clôturées) ----------
+
+function openAdminModal() {
+  document.getElementById('admin-code').value = '';
+  document.getElementById('admin-error').textContent = '';
+  document.getElementById('admin-lock').hidden = false;
+  document.getElementById('admin-panel').hidden = true;
+  document.getElementById('admin-modal').hidden = false;
+}
+
+function renderAdminTable() {
+  const body = document.getElementById('admin-body');
+  if (sessions.length === 0) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">Aucune séance enregistrée.</td></tr>';
+    return;
+  }
+  body.innerHTML = sessions
+    .map((s) => `
+    <tr data-id="${s.id}">
+      <td>${s.numero ?? '—'}</td>
+      <td>${formatDate(s.date)}</td>
+      <td>${escapeHtml(s.nomTri)}</td>
+      <td><span class="badge ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
+      <td><button class="delete-btn" data-action="admin-delete" data-id="${s.id}">Suppr.</button></td>
+    </tr>`)
+    .join('');
+}
+
+async function handleAdminDelete(id) {
+  const session = sessions.find((s) => s.id === id);
+  const label = session ? `N° ${session.numero ?? '—'} (${formatDate(session.date)}, TRI ${session.nomTri})` : 'cette séance';
+  if (!confirm(`Supprimer définitivement ${label} ? Cette action est irréversible, y compris pour une séance clôturée et signée.`)) return;
+  await deleteSessionLocal(id);
+  await renderAll();
+  renderAdminTable();
+}
+
 // ---------- Auth ----------
 
 function checkAuth() {
@@ -625,6 +663,22 @@ function bindEvents() {
   document.getElementById('share-selection-btn').addEventListener('click', handleShareSelection);
   document.getElementById('search').addEventListener('input', () => renderAll());
   document.getElementById('export-pdf-btn').addEventListener('click', handleExportPdf);
+
+  document.getElementById('open-admin-btn').addEventListener('click', openAdminModal);
+  document.getElementById('admin-unlock-btn').addEventListener('click', () => {
+    const code = document.getElementById('admin-code').value;
+    if (code === ADMIN_CODE) {
+      document.getElementById('admin-lock').hidden = true;
+      document.getElementById('admin-panel').hidden = false;
+      renderAdminTable();
+    } else {
+      document.getElementById('admin-error').textContent = 'Code incorrect.';
+    }
+  });
+  document.getElementById('admin-body').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action="admin-delete"]');
+    if (btn) handleAdminDelete(btn.dataset.id);
+  });
 
   setInterval(tickChronos, 1000);
 }

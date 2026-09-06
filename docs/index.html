@@ -119,7 +119,59 @@
         </div>
         <p id="export-message" class="hint"></p>
       </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Administration</h2>
+          <button type="button" id="open-admin-btn" class="secondary small">Ouvrir (code requis)</button>
+        </div>
+        <p class="hint">
+          Accès protégé par un code séparé du mot de passe de connexion.
+          Permet de supprimer une séance, y compris déjà clôturée — à réserver
+          aux corrections exceptionnelles.
+        </p>
+      </section>
     </main>
+  </div>
+
+  <!-- ===== Modale : administration ===== -->
+  <div id="admin-modal" class="modal-overlay" hidden>
+    <div class="modal modal-wide">
+      <h2>Administration</h2>
+
+      <div id="admin-lock">
+        <label>
+          Code administrateur (6 chiffres)
+          <input type="password" id="admin-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
+        </label>
+        <p class="error" id="admin-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Annuler</button>
+          <button type="button" id="admin-unlock-btn">Déverrouiller</button>
+        </div>
+      </div>
+
+      <div id="admin-panel" hidden>
+        <p class="hint">Toutes les séances de ce registre, y compris clôturées.</p>
+        <div class="table-scroll">
+          <table id="admin-table">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Date</th>
+                <th>TRI</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="admin-body"></tbody>
+          </table>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-modal>Fermer</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== Modale : démarrer une séance ===== -->

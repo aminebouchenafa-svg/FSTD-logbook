@@ -102,6 +102,14 @@ le menu natif (comme AirDrop ou Messages).
 Pour changer le(s) mot(s) de passe : modifier le tableau `PASSWORDS` en haut
 de `docs/app.js`.
 
+**Administration** : en bas de l'écran principal, un bloc "Administration"
+protégé par un **code à 6 chiffres séparé** (`ADMIN_CODE` dans `docs/app.js`,
+`482913` par défaut) donne accès à toutes les séances, y compris clôturées,
+avec une suppression possible depuis là. C'est la seule façon de supprimer
+une séance déjà signée — une fois clôturée, elle n'a plus de bouton
+"Suppr." dans le registre normal, pour éviter qu'un collègue en supprime une
+par erreur.
+
 ## Fonctionnement hors-ligne (version serveur)
 
 Une fois connecté(e), l'application reste utilisable sans réseau (utile en
