@@ -11,14 +11,6 @@ let drawing = false;
 let selectedIds = new Set();
 let currentFilteredIds = [];
 
-const SLOT_SCHEDULE = {
-  S1: '06:00',
-  S2: '10:15',
-  S3: '14:30',
-  S4: '18:45',
-  S5: '23:00',
-};
-
 // ---------- Utilitaires ----------
 
 function todayIso(d = new Date()) {
@@ -648,10 +640,6 @@ function bindEvents() {
 
   document.getElementById('open-session-btn').addEventListener('click', openOpenModal);
   document.getElementById('open-form').addEventListener('submit', handleOpenSubmit);
-  document.getElementById('open-creneau').addEventListener('change', (e) => {
-    const nominal = SLOT_SCHEDULE[e.target.value];
-    if (nominal) document.getElementById('open-heureDebut').value = nominal;
-  });
   document.getElementById('close-form').addEventListener('submit', handleCloseSubmit);
 
   document.querySelectorAll('[data-close-modal]').forEach((btn) =>
