@@ -1,6 +1,6 @@
-# FSTD Logbook
+# FSTD Logbook 737 NG
 
-Registre des séances simulateur : authentification par instructeur, ouverture
+Registre des séances simulateur Air Algérie (flotte 737 NG) : authentification par instructeur, ouverture
 de séance avec chrono, clôture avec signature électronique et remarques,
 archivage PDF (par séance ou registre complet) envoyable par email.
 Fonctionne hors connexion (PWA installable, ex. sur iPad).
@@ -35,10 +35,22 @@ commande ci-dessus une fois par instructeur avec un identifiant différent.
 ## Cycle d'une séance
 
 1. **Connexion** — avec l'identifiant et le mot de passe du compte du registre.
-2. **Démarrer une séance** — on saisit date, créneau, heure de début, TRI/CDB/FO,
+2. **Démarrer une séance** — on saisit date, créneau (S1 à S5, heure de début
+   pré-remplie selon l'horaire nominal ci-dessous mais modifiable), TRI/CDB/FO,
    type de training (`QT`/`REC`) et type de séance (`FFS`/`FBS`). Un chrono démarre.
    (Comme le compte est partagé, le nom du TRI doit être saisi manuellement à
    chaque séance — il n'est pas déduit automatiquement de la connexion.)
+
+   | Créneau | Horaire nominal |
+   |---|---|
+   | S1 | 06h00 – 10h00 |
+   | S2 | 10h15 – 14h15 |
+   | S3 | 14h30 – 18h30 |
+   | S4 | 18h45 – 22h45 |
+   | S5 | 23h00 – 03h00 (passe minuit) |
+
+   Le registre calcule et affiche la **durée réelle** de chaque séance
+   (heure de fin − heure de début, en gérant le passage de minuit pour S5).
 3. **Clôturer la séance** — l'instructeur renseigne l'heure de fin, des remarques,
    confirme le mot de passe et **signe électroniquement** (au doigt/stylet sur l'écran).
    La séance passe au statut « Clôturée » et devient archivée dans le registre.

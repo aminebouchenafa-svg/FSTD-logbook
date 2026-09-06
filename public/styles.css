@@ -1,17 +1,24 @@
 :root {
-  color-scheme: light;
-  --bg: #f5f6f8;
-  --card-bg: #ffffff;
-  --border: #dde1e6;
-  --text: #1c2430;
-  --muted: #667085;
-  --accent: #1d4ed8;
-  --accent-hover: #1738a8;
-  --danger: #b42318;
-  --danger-bg: #fef3f2;
-  --success: #166534;
-  --success-bg: #f0fdf4;
-  --navy: #101828;
+  color-scheme: dark;
+  --bg: #0a0e17;
+  --bg-elevated: #131a29;
+  --bg-elevated-2: #1a2236;
+  --border: #262f45;
+  --text: #eef1f8;
+  --muted: #8b95ab;
+  --accent: #d1402e;
+  --accent-hover: #b83323;
+  --accent-soft: rgba(209, 64, 46, 0.16);
+  --danger: #f87171;
+  --danger-soft: rgba(239, 68, 68, 0.16);
+  --success: #34d399;
+  --success-soft: rgba(16, 185, 129, 0.16);
+  --warning: #fbbf24;
+  --warning-soft: rgba(245, 158, 11, 0.16);
+  --info: #60a5fa;
+  --info-soft: rgba(59, 130, 246, 0.16);
+  --violet: #a78bfa;
+  --violet-soft: rgba(139, 92, 246, 0.16);
 }
 
 * {
@@ -46,7 +53,7 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
-  background: #fff;
+  background: var(--bg-elevated-2);
   min-height: 44px; /* cible tactile iPad */
 }
 
@@ -58,6 +65,10 @@ textarea {
 input:focus, select:focus, textarea:focus {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+::placeholder {
+  color: #5b6478;
 }
 
 button {
@@ -80,8 +91,9 @@ button[type="submit"]:hover, #open-session-btn:hover {
 }
 
 button.secondary {
-  background: #eef1f5;
+  background: var(--bg-elevated-2);
   color: var(--text);
+  border: 1px solid var(--border);
 }
 
 button.small {
@@ -92,8 +104,8 @@ button.small {
 
 /* ===== Sync banner ===== */
 .sync-banner {
-  background: #fef6ee;
-  color: #9a3412;
+  background: var(--warning-soft);
+  color: var(--warning);
   text-align: center;
   padding: 0.5rem;
   font-size: 0.85rem;
@@ -106,7 +118,10 @@ button.small {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, var(--navy), #1e2a44);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(209, 64, 46, 0.12), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(96, 165, 250, 0.08), transparent 45%),
+    var(--bg);
   padding: 1.5rem;
 }
 
@@ -115,33 +130,42 @@ button.small {
 }
 
 .auth-card {
-  background: #fff;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 2rem;
-  max-width: 420px;
+  max-width: 440px;
   width: 100%;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .brand {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.brand-logo {
+  max-width: 260px;
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+}
+
+.brand-title {
+  text-align: center;
   margin-bottom: 1.5rem;
 }
 
-.brand-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-}
-
-.brand h1 {
-  font-size: 1.25rem;
+.brand-title h1 {
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
 }
 
 .auth-card .subtitle {
-  margin: 0.15rem 0 0;
+  margin: 0.3rem 0 0;
   color: var(--muted);
   font-size: 0.85rem;
 }
@@ -173,9 +197,10 @@ button.small {
 
 /* ===== App shell ===== */
 .app-header {
-  background: var(--navy);
-  color: #fff;
-  padding: 1.25rem 1.5rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -183,14 +208,29 @@ button.small {
   flex-wrap: wrap;
 }
 
+.app-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.app-header-logo {
+  height: 34px;
+  width: auto;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+}
+
 .app-header h1 {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
 }
 
 .app-header .subtitle {
   margin: 0.2rem 0 0;
-  color: #a3adc2;
-  font-size: 0.85rem;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .header-actions {
@@ -202,11 +242,11 @@ button.small {
 .sync-status {
   font-size: 1.4rem;
   line-height: 1;
-  color: #22c55e;
+  color: var(--success);
 }
 
 .sync-status.offline {
-  color: #f59e0b;
+  color: var(--warning);
 }
 
 main {
@@ -219,7 +259,7 @@ main {
 }
 
 .card {
-  background: var(--card-bg);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
@@ -246,8 +286,9 @@ main {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #eef4ff;
-  color: var(--accent);
+  background: var(--accent-soft);
+  color: #ff8a75;
+  border: 1px solid rgba(209, 64, 46, 0.35);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
@@ -283,7 +324,7 @@ main {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1rem;
-  background: #fbfcfe;
+  background: var(--bg-elevated-2);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -292,7 +333,7 @@ main {
 .open-session-card .chrono {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--accent);
+  color: #ff8a75;
   font-variant-numeric: tabular-nums;
 }
 
@@ -345,7 +386,7 @@ th {
 }
 
 tbody tr:hover {
-  background: #f9fafb;
+  background: var(--bg-elevated-2);
 }
 
 .badge {
@@ -356,13 +397,13 @@ tbody tr:hover {
   font-weight: 700;
 }
 
-.badge-qt { background: #eef4ff; color: var(--accent); }
-.badge-rec { background: var(--success-bg); color: var(--success); }
-.badge-ffs { background: #fef6ee; color: #9a3412; }
-.badge-fbs { background: #f5f3ff; color: #5b21b6; }
-.badge-ouverte { background: #fffbeb; color: #92400e; }
-.badge-cloturee { background: var(--success-bg); color: var(--success); }
-.badge-pending { background: #f1f3f6; color: var(--muted); }
+.badge-qt { background: var(--info-soft); color: var(--info); }
+.badge-rec { background: var(--success-soft); color: var(--success); }
+.badge-ffs { background: var(--warning-soft); color: var(--warning); }
+.badge-fbs { background: var(--violet-soft); color: var(--violet); }
+.badge-ouverte { background: var(--warning-soft); color: var(--warning); }
+.badge-cloturee { background: var(--success-soft); color: var(--success); }
+.badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
 
 .row-actions {
   display: flex;
@@ -376,8 +417,8 @@ tbody tr:hover {
   min-height: auto;
 }
 
-.row-actions .pdf-btn { background: #eef4ff; color: var(--accent); }
-.row-actions .delete-btn { background: var(--danger-bg); color: var(--danger); }
+.row-actions .pdf-btn { background: var(--info-soft); color: var(--info); }
+.row-actions .delete-btn { background: var(--danger-soft); color: var(--danger); }
 
 /* ===== Export ===== */
 .export-row {
@@ -397,7 +438,7 @@ tbody tr:hover {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(16, 24, 40, 0.55);
+  background: rgba(4, 6, 12, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -410,13 +451,15 @@ tbody tr:hover {
 }
 
 .modal {
-  background: #fff;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 1.5rem;
   max-width: 560px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .modal-wide {
@@ -456,7 +499,8 @@ tbody tr:hover {
 }
 
 .summary {
-  background: #f8f9fb;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
@@ -464,8 +508,10 @@ tbody tr:hover {
   margin-bottom: 1rem;
 }
 
+/* Le bloc signature reste clair : l'encre foncée doit rester lisible,
+   comme sur une vraie feuille de signature. */
 .signature-wrap {
-  border: 1px dashed var(--border);
+  border: 1px solid var(--border);
   border-radius: 8px;
   background: #fbfcfe;
   touch-action: none;

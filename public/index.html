@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FSTD Logbook — Registre des séances simulateur</title>
+  <title>FSTD Logbook 737 NG</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <link rel="icon" href="icons/icon-192.png" />
-  <meta name="theme-color" content="#101828" />
+  <meta name="theme-color" content="#0a0e17" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="FSTD Logbook" />
+  <meta name="apple-mobile-web-app-title" content="FSTD Logbook 737 NG" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -20,11 +20,11 @@
   <section id="auth-screen" class="auth-screen">
     <div class="auth-card">
       <div class="brand">
-        <img src="icons/icon-192.png" alt="" class="brand-icon" />
-        <div>
-          <h1>FSTD Logbook</h1>
-          <p class="subtitle">Registre des séances simulateur</p>
-        </div>
+        <img src="branding/air-algerie-logo.png" alt="Air Algérie" class="brand-logo" />
+      </div>
+      <div class="brand-title">
+        <h1>FSTD Logbook 737 NG</h1>
+        <p class="subtitle">Registre des séances simulateur</p>
       </div>
 
       <form id="login-form" class="auth-form">
@@ -47,9 +47,12 @@
   <!-- ===== Application principale ===== -->
   <div id="app-screen" hidden>
     <header class="app-header">
-      <div>
-        <h1>Registre des séances simulateur</h1>
-        <p class="subtitle" id="user-badge"></p>
+      <div class="app-header-brand">
+        <img src="branding/air-algerie-logo.png" alt="Air Algérie" class="app-header-logo" />
+        <div>
+          <h1>FSTD Logbook 737 NG</h1>
+          <p class="subtitle" id="user-badge"></p>
+        </div>
       </div>
       <div class="header-actions">
         <span id="sync-status" class="sync-status">●</span>
@@ -88,6 +91,7 @@
                 <th>Créneau</th>
                 <th>Début</th>
                 <th>Fin</th>
+                <th>Durée</th>
                 <th>TRI</th>
                 <th>CDB</th>
                 <th>FO</th>
@@ -98,7 +102,7 @@
               </tr>
             </thead>
             <tbody id="sessions-body">
-              <tr><td colspan="13" class="empty">Chargement…</td></tr>
+              <tr><td colspan="14" class="empty">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
@@ -144,10 +148,11 @@
             Créneau
             <select id="open-creneau" required>
               <option value="" disabled selected>Choisir…</option>
-              <option value="Matin">Matin</option>
-              <option value="Après-midi">Après-midi</option>
-              <option value="Soir">Soir</option>
-              <option value="Nuit">Nuit</option>
+              <option value="S1">S1 (06h00 - 10h00)</option>
+              <option value="S2">S2 (10h15 - 14h15)</option>
+              <option value="S3">S3 (14h30 - 18h30)</option>
+              <option value="S4">S4 (18h45 - 22h45)</option>
+              <option value="S5">S5 (23h00 - 03h00)</option>
             </select>
           </label>
           <label>

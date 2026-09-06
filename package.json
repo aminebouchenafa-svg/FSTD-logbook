@@ -1,7 +1,7 @@
 {
   "name": "fstd-logbook",
   "version": "1.0.0",
-  "description": "Registre des séances simulateur (FSTD) - dates, créneaux, équipages et type d'entraînement",
+  "description": "FSTD Logbook 737 NG - registre des séances simulateur : dates, créneaux, équipages et type d'entraînement",
   "private": true,
   "type": "commonjs",
   "main": "server/index.js",

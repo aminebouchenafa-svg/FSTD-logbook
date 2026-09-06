@@ -14,6 +14,17 @@ function formatDate(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function formatDuration(date, heureDebut, heureFin) {
+  if (!heureFin) return '—';
+  const start = new Date(`${date}T${heureDebut}:00`);
+  let end = new Date(`${date}T${heureFin}:00`);
+  if (end <= start) end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
+  const minutes = Math.round((end - start) / 60000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
+}
+
 function drawHeader(doc, title) {
   doc.fontSize(18).fillColor('#101828').text('FSTD Logbook', { continued: false });
   doc.fontSize(11).fillColor('#667085').text('Registre des séances simulateur');
@@ -44,6 +55,7 @@ async function sessionPdfBuffer(session) {
   labelValue(doc, 'Créneau', session.creneau);
   labelValue(doc, 'Heure de début', session.heureDebut);
   labelValue(doc, 'Heure de fin', session.heureFin);
+  labelValue(doc, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin));
 
   doc.x = col2;
   doc.y = topY;
@@ -52,7 +64,7 @@ async function sessionPdfBuffer(session) {
   labelValue(doc, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte');
 
   doc.x = col1;
-  doc.y = Math.max(doc.y, topY + 4 * 40) + 10;
+  doc.y = Math.max(doc.y, topY + 5 * 40) + 10;
 
   labelValue(doc, 'TRI (instructeur)', session.nomTri);
   labelValue(doc, 'CDB', session.nomCdb);
@@ -93,8 +105,8 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
     : 'Registre complet des séances';
   drawHeader(doc, title);
 
-  const headers = ['N°', 'Date', 'Créneau', 'Début', 'Fin', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
-  const widths = [30, 60, 65, 45, 45, 90, 90, 90, 60, 55, 65];
+  const headers = ['N°', 'Date', 'Créneau', 'Début', 'Fin', 'Durée', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
+  const widths = [30, 60, 45, 40, 40, 45, 85, 85, 85, 55, 50, 60];
   let y = doc.y;
   const startX = doc.page.margins.left;
 
@@ -122,6 +134,7 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
       s.creneau,
       s.heureDebut,
       s.heureFin || '—',
+      formatDuration(s.date, s.heureDebut, s.heureFin),
       s.nomTri,
       s.nomCdb,
       s.nomFo,

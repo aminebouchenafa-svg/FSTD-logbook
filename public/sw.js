@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fstd-logbook-v1';
+const CACHE_NAME = 'fstd-logbook-v2';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/branding/air-algerie-logo.png',
 ];
 
 self.addEventListener('install', (event) => {

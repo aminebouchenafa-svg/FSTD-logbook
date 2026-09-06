@@ -11,6 +11,14 @@ let drawing = false;
 let selectedIds = new Set();
 let currentFilteredIds = [];
 
+const SLOT_SCHEDULE = {
+  S1: '06:00',
+  S2: '10:15',
+  S3: '14:30',
+  S4: '18:45',
+  S5: '23:00',
+};
+
 // ---------- Utilitaires ----------
 
 function todayIso(d = new Date()) {
@@ -25,6 +33,19 @@ function formatDate(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
   return `${d}/${m}/${y}`;
+}
+
+// Calcule la durée entre heureDebut et heureFin, en gérant les séances qui
+// passent minuit (ex. créneau S5 : 23h00 -> 03h00).
+function formatDuration(date, heureDebut, heureFin) {
+  if (!heureFin) return '—';
+  const start = new Date(`${date}T${heureDebut}:00`);
+  let end = new Date(`${date}T${heureFin}:00`);
+  if (end <= start) end = new Date(end.getTime() + 24 * 60 * 60 * 1000);
+  const minutes = Math.round((end - start) / 60000);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
 }
 
 function escapeHtml(str) {
@@ -270,7 +291,7 @@ function renderTable(pendingIds) {
   selectedIds.forEach((id) => { if (!validIds.has(id)) selectedIds.delete(id); });
 
   if (filtered.length === 0) {
-    body.innerHTML = '<tr><td colspan="13" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="14" class="empty">Aucune séance enregistrée.</td></tr>';
     updateSelectionUi(filtered);
     return;
   }
@@ -286,6 +307,7 @@ function renderTable(pendingIds) {
       <td>${s.creneau}</td>
       <td>${s.heureDebut}</td>
       <td>${s.heureFin || '—'}</td>
+      <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
       <td>${escapeHtml(s.nomTri)}</td>
       <td>${escapeHtml(s.nomCdb)}</td>
       <td>${escapeHtml(s.nomFo)}</td>
@@ -626,6 +648,10 @@ function bindEvents() {
 
   document.getElementById('open-session-btn').addEventListener('click', openOpenModal);
   document.getElementById('open-form').addEventListener('submit', handleOpenSubmit);
+  document.getElementById('open-creneau').addEventListener('change', (e) => {
+    const nominal = SLOT_SCHEDULE[e.target.value];
+    if (nominal) document.getElementById('open-heureDebut').value = nominal;
+  });
   document.getElementById('close-form').addEventListener('submit', handleCloseSubmit);
 
   document.querySelectorAll('[data-close-modal]').forEach((btn) =>

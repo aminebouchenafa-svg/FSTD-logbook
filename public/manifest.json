@@ -1,12 +1,12 @@
 {
-  "name": "FSTD Logbook — Registre des séances simulateur",
+  "name": "FSTD Logbook 737 NG",
   "short_name": "FSTD Logbook",
-  "description": "Registre des séances simulateur : ouverture, chrono, clôture avec signature électronique et archivage PDF.",
+  "description": "Registre des séances simulateur 737 NG : ouverture, chrono, clôture avec signature électronique et archivage PDF.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#101828",
-  "theme_color": "#101828",
+  "background_color": "#0a0e17",
+  "theme_color": "#0a0e17",
   "orientation": "any",
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
