@@ -128,10 +128,15 @@ app.get('/api/sessions/:id/pdf', auth.requireAuth, async (req, res) => {
 });
 
 app.get('/api/export/pdf', auth.requireAuth, async (req, res) => {
-  const { from, to } = req.query;
+  const { from, to, ids } = req.query;
   let sessions = store.listSessions();
-  if (from) sessions = sessions.filter((s) => s.date >= from);
-  if (to) sessions = sessions.filter((s) => s.date <= to);
+  if (ids) {
+    const idSet = new Set(String(ids).split(',').filter(Boolean));
+    sessions = sessions.filter((s) => idSet.has(s.id));
+  } else {
+    if (from) sessions = sessions.filter((s) => s.date >= from);
+    if (to) sessions = sessions.filter((s) => s.date <= to);
+  }
   const buffer = await pdf.registryPdfBuffer(sessions, { from, to });
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'attachment; filename="registre-fstd.pdf"');
@@ -139,12 +144,17 @@ app.get('/api/export/pdf', auth.requireAuth, async (req, res) => {
 });
 
 app.post('/api/export/email', auth.requireAuth, async (req, res) => {
-  const { to, from, toDate } = req.body || {};
+  const { to, from, toDate, ids } = req.body || {};
   if (!to) return res.status(400).json({ errors: ['Adresse email destinataire obligatoire.'] });
 
   let sessions = store.listSessions();
-  if (from) sessions = sessions.filter((s) => s.date >= from);
-  if (toDate) sessions = sessions.filter((s) => s.date <= toDate);
+  if (Array.isArray(ids) && ids.length > 0) {
+    const idSet = new Set(ids);
+    sessions = sessions.filter((s) => idSet.has(s.id));
+  } else {
+    if (from) sessions = sessions.filter((s) => s.date >= from);
+    if (toDate) sessions = sessions.filter((s) => s.date <= toDate);
+  }
 
   const buffer = await pdf.registryPdfBuffer(sessions, { from, to: toDate });
 

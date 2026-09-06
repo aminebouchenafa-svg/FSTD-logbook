@@ -8,6 +8,8 @@ let outbox = [];
 let closingSessionId = null;
 let hasSignature = false;
 let drawing = false;
+let selectedIds = new Set();
+let currentFilteredIds = [];
 
 // ---------- Utilitaires ----------
 
@@ -263,8 +265,13 @@ function renderTable(pendingIds) {
 
   const body = document.getElementById('sessions-body');
 
+  // On ne garde en sélection que des séances toujours présentes.
+  const validIds = new Set(sessions.map((s) => s.id));
+  selectedIds.forEach((id) => { if (!validIds.has(id)) selectedIds.delete(id); });
+
   if (filtered.length === 0) {
-    body.innerHTML = '<tr><td colspan="12" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="13" class="empty">Aucune séance enregistrée.</td></tr>';
+    updateSelectionUi(filtered);
     return;
   }
 
@@ -273,6 +280,7 @@ function renderTable(pendingIds) {
       const pending = pendingIds.has(s.id);
       return `
     <tr data-id="${s.id}">
+      <td><input type="checkbox" class="row-select" data-id="${s.id}" ${selectedIds.has(s.id) ? 'checked' : ''}></td>
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
       <td>${s.creneau}</td>
@@ -296,6 +304,22 @@ function renderTable(pendingIds) {
     </tr>`;
     })
     .join('');
+
+  updateSelectionUi(filtered);
+}
+
+function updateSelectionUi(filtered) {
+  const bar = document.getElementById('selection-bar');
+  const count = document.getElementById('selection-count');
+  const selectAll = document.getElementById('select-all');
+
+  bar.hidden = selectedIds.size === 0;
+  count.textContent = `${selectedIds.size} séance(s) sélectionnée(s)`;
+
+  currentFilteredIds = filtered.map((s) => s.id);
+  const selectedInView = currentFilteredIds.filter((id) => selectedIds.has(id));
+  selectAll.checked = currentFilteredIds.length > 0 && selectedInView.length === currentFilteredIds.length;
+  selectAll.indeterminate = selectedInView.length > 0 && selectedInView.length < currentFilteredIds.length;
 }
 
 // ---------- Modale : démarrer une séance ----------
@@ -458,12 +482,26 @@ async function handleCloseSubmit(e) {
 
 // ---------- Export PDF / email ----------
 
-async function downloadBlobResponse(res, filename) {
+// Sur iPad/iPhone, propose la feuille de partage native (AirDrop, Mail, Messages…)
+// quand elle est disponible ; sinon, retombe sur un téléchargement classique.
+async function shareOrDownloadResponse(res, filename, shareTitle) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({ errors: ['Erreur lors du téléchargement.'] }));
     throw new Error((body.errors || []).join('\n') || 'Erreur lors du téléchargement.');
   }
   const blob = await res.blob();
+  const file = new File([blob], filename, { type: 'application/pdf' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: shareTitle || filename });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // l'utilisateur a annulé le partage
+      // Sinon on retombe sur le téléchargement classique ci-dessous.
+    }
+  }
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -484,7 +522,7 @@ async function handleExportPdf() {
   msg.textContent = '';
   try {
     const res = await apiFetch(`/api/export/pdf?${params.toString()}`);
-    await downloadBlobResponse(res, 'registre-fstd.pdf');
+    await shareOrDownloadResponse(res, 'registre-fstd.pdf', 'Registre FSTD');
   } catch (err) {
     msg.textContent = err.message;
   }
@@ -522,9 +560,22 @@ async function handleExportEmail() {
 async function downloadSessionPdf(id) {
   const res = await apiFetch(`/api/sessions/${id}/pdf`);
   try {
-    await downloadBlobResponse(res, `seance-${id}.pdf`);
+    await shareOrDownloadResponse(res, `seance-${id}.pdf`, 'Fiche de séance');
   } catch (err) {
     alert(err.message);
+  }
+}
+
+async function handleShareSelection() {
+  const msg = document.getElementById('export-message');
+  if (selectedIds.size === 0) return;
+  try {
+    const params = new URLSearchParams({ ids: Array.from(selectedIds).join(',') });
+    const res = await apiFetch(`/api/export/pdf?${params.toString()}`);
+    await shareOrDownloadResponse(res, 'seances-selection.pdf', 'Séances sélectionnées');
+  } catch (err) {
+    if (msg) msg.textContent = err.message;
+    else alert(err.message);
   }
 }
 
@@ -596,6 +647,27 @@ function bindEvents() {
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
   });
+
+  document.getElementById('sessions-body').addEventListener('change', (e) => {
+    const checkbox = e.target.closest('.row-select');
+    if (!checkbox) return;
+    if (checkbox.checked) selectedIds.add(checkbox.dataset.id);
+    else selectedIds.delete(checkbox.dataset.id);
+    updateSelectionUi(sessions.filter((s) => currentFilteredIds.includes(s.id)));
+  });
+
+  document.getElementById('select-all').addEventListener('change', (e) => {
+    if (e.target.checked) currentFilteredIds.forEach((id) => selectedIds.add(id));
+    else currentFilteredIds.forEach((id) => selectedIds.delete(id));
+    renderTable(new Set(outbox.map((a) => a.targetId)));
+  });
+
+  document.getElementById('clear-selection-btn').addEventListener('click', () => {
+    selectedIds.clear();
+    renderTable(new Set(outbox.map((a) => a.targetId)));
+  });
+
+  document.getElementById('share-selection-btn').addEventListener('click', handleShareSelection);
 
   document.getElementById('search').addEventListener('input', () => renderAll());
 

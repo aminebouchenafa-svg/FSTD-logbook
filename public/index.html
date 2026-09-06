@@ -73,10 +73,16 @@
           <h2>Registre</h2>
           <input type="search" id="search" placeholder="Rechercher (nom, date, type…)" />
         </div>
+        <div id="selection-bar" class="selection-bar" hidden>
+          <span id="selection-count"></span>
+          <button type="button" id="share-selection-btn" class="secondary small">Partager la sélection (PDF)</button>
+          <button type="button" id="clear-selection-btn" class="secondary small">Annuler</button>
+        </div>
         <div class="table-scroll">
           <table id="sessions-table">
             <thead>
               <tr>
+                <th><input type="checkbox" id="select-all" /></th>
                 <th>N°</th>
                 <th>Date</th>
                 <th>Créneau</th>
@@ -92,7 +98,7 @@
               </tr>
             </thead>
             <tbody id="sessions-body">
-              <tr><td colspan="12" class="empty">Chargement…</td></tr>
+              <tr><td colspan="13" class="empty">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
