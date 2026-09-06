@@ -68,6 +68,10 @@ commande ci-dessus une fois par instructeur avec un identifiant différent.
 3. **Clôturer la séance** — l'instructeur renseigne l'heure de fin, des remarques,
    confirme le mot de passe et **signe électroniquement** (au doigt/stylet sur l'écran).
    La séance passe au statut « Clôturée » et devient archivée dans le registre.
+   **Une fois clôturée et signée, une séance ne peut plus jamais être
+   supprimée** (par personne, ni via l'interface ni via l'API) — comme sur un
+   registre papier, on ne raye pas une entrée déjà signée. Seule une séance
+   encore « Ouverte » (pas encore signée) peut être annulée en cas d'erreur.
 4. **Archivage** — depuis le registre, on peut télécharger le PDF d'une séance,
    ou exporter le registre complet (ou filtré par période) en PDF. L'envoi par
    email est prêt côté code mais désactivé pour l'instant (voir plus bas) :

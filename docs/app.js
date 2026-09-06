@@ -224,7 +224,7 @@ function renderTable() {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}">PDF</button>
-          <button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>
+          ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
     </tr>`)
@@ -545,6 +545,11 @@ async function handleExportPdf() {
 }
 
 async function deleteSession(id) {
+  const session = sessions.find((s) => s.id === id);
+  if (session && session.status === 'cloturee') {
+    alert('Cette séance est clôturée et signée : elle ne peut plus être supprimée.');
+    return;
+  }
   if (!confirm('Supprimer définitivement cette séance de ce registre ?')) return;
   await deleteSessionLocal(id);
   await renderAll();

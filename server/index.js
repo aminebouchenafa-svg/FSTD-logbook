@@ -111,8 +111,12 @@ app.post('/api/sessions/:id/close', auth.requireAuth, (req, res) => {
 });
 
 app.delete('/api/sessions/:id', auth.requireAuth, (req, res) => {
-  const deleted = store.deleteSession(req.params.id);
-  if (!deleted) return res.status(404).json({ errors: ['Séance introuvable.'] });
+  const existing = store.getSession(req.params.id);
+  if (!existing) return res.status(404).json({ errors: ['Séance introuvable.'] });
+  if (existing.status === 'cloturee') {
+    return res.status(403).json({ errors: ['Cette séance est clôturée et signée : elle ne peut plus être supprimée.'] });
+  }
+  store.deleteSession(req.params.id);
   res.status(204).end();
 });
 
