@@ -1,24 +1,27 @@
 :root {
-  color-scheme: dark;
-  --bg: #0a0e17;
-  --bg-elevated: #131a29;
-  --bg-elevated-2: #1a2236;
-  --border: #262f45;
-  --text: #eef1f8;
-  --muted: #8b95ab;
-  --accent: #d1402e;
-  --accent-hover: #b83323;
-  --accent-soft: rgba(209, 64, 46, 0.16);
-  --danger: #f87171;
-  --danger-soft: rgba(239, 68, 68, 0.16);
-  --success: #34d399;
-  --success-soft: rgba(16, 185, 129, 0.16);
-  --warning: #fbbf24;
-  --warning-soft: rgba(245, 158, 11, 0.16);
-  --info: #60a5fa;
-  --info-soft: rgba(59, 130, 246, 0.16);
-  --violet: #a78bfa;
-  --violet-soft: rgba(139, 92, 246, 0.16);
+  color-scheme: light;
+  --bg: #eef0f5;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #f4f5f9;
+  --border: #e3e6ee;
+  --text: #1c2430;
+  --muted: #6b7280;
+  --accent: #e63946;
+  --accent-hover: #c62e3a;
+  --accent-soft: rgba(230, 57, 70, 0.1);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.08);
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.1);
+  --info: #2563eb;
+  --info-soft: rgba(37, 99, 235, 0.1);
+  --violet: #7c3aed;
+  --violet-soft: rgba(124, 58, 237, 0.1);
+  --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
+  --shadow-md: 0 8px 24px rgba(28, 36, 48, 0.08);
+  --shadow-lg: 0 20px 50px rgba(28, 36, 48, 0.14);
 }
 
 * {
@@ -51,7 +54,7 @@ input, select, textarea {
   font: inherit;
   padding: 0.65rem 0.7rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   color: var(--text);
   background: var(--bg-elevated-2);
   min-height: 44px; /* cible tactile iPad */
@@ -68,14 +71,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::placeholder {
-  color: #5b6478;
+  color: #9aa1b0;
 }
 
 button {
   font: inherit;
   font-weight: 600;
   padding: 0.65rem 1.2rem;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   min-height: 44px;
@@ -84,6 +87,7 @@ button {
 button[type="submit"], #open-session-btn {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.28);
 }
 
 button[type="submit"]:hover, #open-session-btn:hover {
@@ -119,8 +123,8 @@ button.small {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 15% 20%, rgba(209, 64, 46, 0.12), transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(96, 165, 250, 0.08), transparent 45%),
+    radial-gradient(circle at 15% 15%, rgba(230, 57, 70, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(37, 99, 235, 0.06), transparent 45%),
     var(--bg);
   padding: 1.5rem;
 }
@@ -132,11 +136,11 @@ button.small {
 .auth-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 22px;
   padding: 2rem;
   max-width: 440px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
 }
 
 .brand {
@@ -150,8 +154,9 @@ button.small {
   width: 100%;
   height: auto;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 0.9rem 1.1rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .brand-title {
@@ -218,7 +223,7 @@ button.small {
   height: 34px;
   width: auto;
   background: #fff;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0.25rem 0.4rem;
 }
 
@@ -261,8 +266,9 @@ main {
 .card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-md);
 }
 
 .section-header {
@@ -287,9 +293,9 @@ main {
   align-items: center;
   gap: 0.75rem;
   background: var(--accent-soft);
-  color: #ff8a75;
-  border: 1px solid rgba(209, 64, 46, 0.35);
-  border-radius: 8px;
+  color: var(--accent-hover);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+  border-radius: 10px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
   font-size: 0.85rem;
@@ -322,7 +328,7 @@ main {
 
 .open-session-card {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1rem;
   background: var(--bg-elevated-2);
   display: flex;
@@ -333,7 +339,7 @@ main {
 .open-session-card .chrono {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #ff8a75;
+  color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -438,7 +444,7 @@ tbody tr:hover {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 12, 0.7);
+  background: rgba(28, 36, 48, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,13 +459,13 @@ tbody tr:hover {
 .modal {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 20px;
   padding: 1.5rem;
   max-width: 560px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-wide {
@@ -501,18 +507,16 @@ tbody tr:hover {
 .summary {
   background: var(--bg-elevated-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
   color: var(--text);
   margin-bottom: 1rem;
 }
 
-/* Le bloc signature reste clair : l'encre foncée doit rester lisible,
-   comme sur une vraie feuille de signature. */
 .signature-wrap {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fbfcfe;
   touch-action: none;
 }
