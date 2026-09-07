@@ -448,6 +448,10 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+function setPdfColor(doc, hex, fallback = [20, 24, 40]) {
+  doc.setTextColor(...(hex ? hexToRgb(hex) : fallback));
+}
+
 // Version très éclaircie d'une couleur, pour servir de fond de badge sobre
 // derrière un libellé (même logique que les "chips" à l'écran).
 function lightenHex(hex, factor = 0.85) {
@@ -469,16 +473,55 @@ function drawLabelBadge(doc, label, x, y, hex) {
   doc.text(label, x + padX, y);
 }
 
-function drawSessionPdf(doc, session, y0 = 20) {
+// Logo Air Algérie chargé une fois au démarrage (voir preloadLogo) et réutilisé
+// dans tous les PDF générés, pour que le rapport archivé porte la même image
+// que l'écran de connexion et l'en-tête de l'application.
+let logoDataUrl = null;
+
+async function preloadLogo() {
+  try {
+    const res = await fetch('branding/air-algerie-logo.png');
+    const blob = await res.blob();
+    logoDataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    logoDataUrl = null;
+  }
+}
+
+// En-tête commun à tous les PDF : logo + titre + sous-titre. Retourne le y à
+// partir duquel le contenu spécifique (fiche ou tableau) doit continuer.
+function drawPdfHeader(doc, x = 14, topY = 14) {
+  let textX = x;
+  if (logoDataUrl) {
+    const logoW = 34;
+    const logoH = logoW * (184 / 999);
+    try {
+      doc.addImage(logoDataUrl, 'PNG', x, topY - logoH / 2, logoW, logoH);
+      textX = x + logoW + 6;
+    } catch {
+      // logo illisible : on continue sans image
+    }
+  }
   doc.setFontSize(17);
   doc.setTextColor(20, 24, 40);
-  doc.text('FSTD Logbook 737 NG', 14, y0);
+  doc.text('FSTD Logbook 737 NG', textX, topY + 2);
   doc.setFontSize(11);
   doc.setTextColor(100, 110, 130);
-  doc.text('Registre des séances simulateur', 14, y0 + 7);
+  doc.text('Registre des séances simulateur', textX, topY + 9);
+  return topY + 22;
+}
+
+function drawSessionPdf(doc, session) {
+  let y0 = drawPdfHeader(doc);
   doc.setFontSize(14);
   doc.setTextColor(20, 24, 40);
-  doc.text(`Fiche de séance n° ${session.numero}`, 14, y0 + 18);
+  doc.text(`Fiche de séance n° ${session.numero}`, 14, y0);
+  y0 += 2;
 
   const rows = [
     ['Date', formatDate(session.date), null],
@@ -494,7 +537,7 @@ function drawSessionPdf(doc, session, y0 = 20) {
     ['FO', session.nomFo, '#00c2a8'],
   ];
 
-  let y = y0 + 31;
+  let y = y0 + 13;
   rows.forEach(([label, value, color]) => {
     if (color) {
       drawLabelBadge(doc, label, 14, y, color);
@@ -536,16 +579,14 @@ function drawSessionPdf(doc, session, y0 = 20) {
 }
 
 function sessionsTablePdf(doc, sessionsToPrint, title) {
-  doc.setFontSize(16);
+  const headerY = drawPdfHeader(doc);
+  doc.setFontSize(11);
   doc.setTextColor(20, 24, 40);
-  doc.text('FSTD Logbook 737 NG', 14, 15);
-  doc.setFontSize(10);
-  doc.setTextColor(100, 110, 130);
-  doc.text(title, 14, 21);
+  doc.text(title, 14, headerY - 5);
 
   const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CPT', 'FO', 'Training', 'Séance', 'Statut'];
   const colX = [14, 24, 42, 60, 74, 88, 100, 130, 160, 190, 210, 226];
-  let y = 32;
+  let y = headerY + 6;
 
   doc.setFontSize(8);
   doc.setTextColor(100, 110, 130);
@@ -818,6 +859,7 @@ async function init() {
 
   setupSignaturePad();
   bindEvents();
+  preloadLogo();
 
   if (checkAuth()) {
     showAppScreen();

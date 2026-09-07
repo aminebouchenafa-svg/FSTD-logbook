@@ -1,4 +1,16 @@
 const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
+
+// Logo Air Algérie, réutilisé dans tous les PDF pour rester cohérent avec
+// l'écran de connexion et l'en-tête de l'application.
+const LOGO_PATH = path.join(__dirname, '..', 'public', 'branding', 'air-algerie-logo.png');
+let logoBuffer = null;
+try {
+  logoBuffer = fs.readFileSync(LOGO_PATH);
+} catch {
+  logoBuffer = null;
+}
 
 function bufferFromDoc(doc) {
   return new Promise((resolve) => {
@@ -26,10 +38,29 @@ function formatDuration(date, heureDebut, heureFin) {
 }
 
 function drawHeader(doc, title) {
-  doc.fontSize(18).fillColor('#101828').text('FSTD Logbook', { continued: false });
-  doc.fontSize(11).fillColor('#667085').text('Registre des séances simulateur');
-  doc.moveDown(0.5);
-  doc.fontSize(14).fillColor('#101828').text(title);
+  const startX = doc.x;
+  const startY = doc.y;
+  let textX = startX;
+  let logoH = 0;
+
+  if (logoBuffer) {
+    const logoW = 90;
+    logoH = logoW * (184 / 999);
+    try {
+      doc.image(logoBuffer, startX, startY, { width: logoW });
+      textX = startX + logoW + 14;
+    } catch {
+      // logo illisible : on continue sans image
+      logoH = 0;
+    }
+  }
+
+  doc.fontSize(18).fillColor('#101828').text('FSTD Logbook', textX, startY);
+  doc.fontSize(11).fillColor('#667085').text('Registre des séances simulateur', textX, doc.y);
+
+  doc.x = startX;
+  doc.y = Math.max(doc.y, startY + logoH) + 8;
+  doc.fontSize(14).fillColor('#101828').text(title, startX, doc.y);
   doc.moveDown(1);
 }
 
