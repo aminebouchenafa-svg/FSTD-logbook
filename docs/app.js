@@ -238,15 +238,15 @@ function renderTable() {
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
-      <td>${s.heureDebut}</td>
-      <td>${s.heureFin || '—'}</td>
+      <td><span class="chip chip-navy">${s.heureDebut}</span></td>
+      <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
-      <td>${escapeHtml(s.nomTri)}</td>
-      <td>${escapeHtml(s.nomCdb)}</td>
-      <td>${escapeHtml(s.nomFo)}</td>
+      <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
+      <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
-      <td><span class="badge ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
+      <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}">PDF</button>
@@ -604,15 +604,15 @@ function renderAdminTable() {
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
-      <td>${s.heureDebut}</td>
-      <td>${s.heureFin || '—'}</td>
+      <td><span class="chip chip-navy">${s.heureDebut}</span></td>
+      <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
-      <td>${escapeHtml(s.nomTri)}</td>
-      <td>${escapeHtml(s.nomCdb)}</td>
-      <td>${escapeHtml(s.nomFo)}</td>
+      <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
+      <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
-      <td><span class="badge ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
+      <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
       <td><button class="delete-btn" data-action="admin-delete" data-id="${s.id}">Suppr.</button></td>
     </tr>`)
     .join('');

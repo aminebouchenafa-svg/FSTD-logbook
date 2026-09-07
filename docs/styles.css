@@ -11,7 +11,7 @@
   --accent-hover: #a3010b;
   --accent-soft: rgba(199, 1, 13, 0.1);
   --navy: #37495f;
-  --navy-soft: rgba(55, 73, 95, 0.08);
+  --navy-soft: rgba(55, 73, 95, 0.16);
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.08);
   /* Palette "néon" : couleurs saturées + halo lumineux marqué derrière chaque badge. */
@@ -71,20 +71,31 @@ label {
 .label-tri { color: var(--violet); }
 .label-cdb { color: var(--info); }
 .label-fo { color: var(--teal); }
+.label-training { color: var(--success); font-weight: 700; }
+.label-seance { color: var(--orange); font-weight: 700; }
 
+/* Champs "importants" du formulaire : case teintée de la couleur du champ,
+   texte en noir pour rester lisible (façon carte de couleur, pas texte coloré). */
 .input-heure,
 .input-tri,
 .input-cdb,
-.input-fo {
+.input-fo,
+.input-training,
+.input-seance {
   font-size: 1.4rem;
   font-weight: 800;
   text-align: center;
+  color: var(--text);
+  border-width: 1.5px;
+  border-style: solid;
 }
 
-.input-heure { color: var(--navy); }
-.input-tri { color: var(--violet); }
-.input-cdb { color: var(--info); }
-.input-fo { color: var(--teal); }
+.input-heure { background: var(--navy-soft); border-color: rgba(55, 73, 95, 0.35); }
+.input-tri { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
+.input-cdb { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
+.input-fo { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
+.input-training { background: var(--success-soft); border-color: rgba(0, 200, 83, 0.35); }
+.input-seance { background: var(--orange-soft); border-color: rgba(255, 106, 0, 0.35); }
 
 input, select, textarea {
   font: inherit;
@@ -456,9 +467,28 @@ tbody tr:hover {
 .badge-rec { background: var(--success-soft); color: var(--success); border-color: rgba(0, 200, 83, 0.4); box-shadow: 0 0 10px rgba(0, 200, 83, 0.25); }
 .badge-ffs { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
 .badge-fbs { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
-.badge-ouverte { background: var(--warning-soft); color: var(--warning); }
-.badge-cloturee { background: var(--success-soft); color: var(--success); }
+.badge-ouverte { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
+.badge-cloturee { background: var(--success-soft); color: var(--success); border-color: rgba(0, 200, 83, 0.4); box-shadow: 0 0 10px rgba(0, 200, 83, 0.25); }
 .badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
+
+/* Cases colorées pour l'heure de début/fin et les noms de l'équipage dans le
+   registre : fond teinté par rôle, texte en noir pour la lisibilité. */
+.chip {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 10px;
+  border-width: 1.5px;
+  border-style: solid;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.chip-navy { background: var(--navy-soft); border-color: rgba(55, 73, 95, 0.35); }
+.chip-violet { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
+.chip-info { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
+.chip-teal { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
 
 /* Code couleur des créneaux (S1-S5), chacun avec son halo sobre. */
 .badge-s1 { background: var(--info-soft); color: var(--info); border-color: rgba(0, 145, 255, 0.4); box-shadow: 0 0 10px rgba(0, 145, 255, 0.25); }
@@ -469,18 +499,20 @@ tbody tr:hover {
 
 .row-actions {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .row-actions button {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   min-height: auto;
+  border-width: 1.5px;
+  border-style: solid;
 }
 
-.row-actions .pdf-btn { background: var(--info-soft); color: var(--info); }
-.row-actions .delete-btn { background: var(--danger-soft); color: var(--danger); }
+.pdf-btn { background: var(--info-soft); color: var(--info); border: 1.5px solid rgba(0, 145, 255, 0.4); }
+.delete-btn { background: var(--danger-soft); color: var(--danger); border: 1.5px solid rgba(220, 38, 38, 0.4); font-weight: 700; }
 
 /* ===== Export ===== */
 .export-row {
