@@ -61,7 +61,9 @@ function createSession(data, user) {
     heureFin: null,
     nomTri: data.nomTri,
     nomCdb: data.nomCdb,
+    nomCdb2: data.nomCdb2 || '',
     nomFo: data.nomFo,
+    nomFo2: data.nomFo2 || '',
     typeTraining: data.typeTraining,
     typeSeance: data.typeSeance,
     status: 'ouverte',
@@ -83,8 +85,8 @@ function updateSession(id, data) {
   const sessions = readAll();
   const index = sessions.findIndex((s) => s.id === id);
   if (index === -1) return null;
-  const editable = (({ date, creneau, heureDebut, nomTri, nomCdb, nomFo, typeTraining, typeSeance }) => (
-    { date, creneau, heureDebut, nomTri, nomCdb, nomFo, typeTraining, typeSeance }
+  const editable = (({ date, creneau, heureDebut, nomTri, nomCdb, nomCdb2, nomFo, nomFo2, typeTraining, typeSeance }) => (
+    { date, creneau, heureDebut, nomTri, nomCdb, nomCdb2, nomFo, nomFo2, typeTraining, typeSeance }
   ))(data);
   Object.keys(editable).forEach((k) => editable[k] === undefined && delete editable[k]);
   sessions[index] = { ...sessions[index], ...editable };

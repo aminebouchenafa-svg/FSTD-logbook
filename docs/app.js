@@ -167,7 +167,7 @@ function renderOpenSessions() {
       <div class="chrono" data-start="${s.createdAt}" data-action="expand-chrono" data-id="${s.id}">00:00:00</div>
       <div><strong>${formatDate(s.date)}</strong> <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></div>
       <div class="crew">
-        TRI ${escapeHtml(s.nomTri)} · CPT ${escapeHtml(s.nomCdb)} · FO ${escapeHtml(s.nomFo)}
+        TRI ${escapeHtml(s.nomTri)} · CPT ${escapeHtml(s.nomCdb)}${s.nomCdb2 ? ` / ${escapeHtml(s.nomCdb2)}` : ''} · FO ${escapeHtml(s.nomFo)}${s.nomFo2 ? ` / ${escapeHtml(s.nomFo2)}` : ''}
       </div>
       <div class="badges">
         <span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span>
@@ -198,7 +198,9 @@ function openFullscreenChrono(session) {
   document.getElementById('fullscreen-crew').innerHTML = `
     <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
     <span class="chip chip-info">CPT ${escapeHtml(session.nomCdb)}</span>
+    ${session.nomCdb2 ? `<span class="chip chip-info">CPT 2 ${escapeHtml(session.nomCdb2)}</span>` : ''}
     <span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>
+    ${session.nomFo2 ? `<span class="chip chip-teal">FO 2 ${escapeHtml(session.nomFo2)}</span>` : ''}
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
   tickChronos();
@@ -213,7 +215,7 @@ function renderTable() {
   const query = document.getElementById('search').value.trim().toLowerCase();
   const filtered = query
     ? sessions.filter((s) =>
-        [s.nomTri, s.nomCdb, s.nomFo, s.date, s.creneau, s.typeTraining, s.typeSeance]
+        [s.nomTri, s.nomCdb, s.nomCdb2, s.nomFo, s.nomFo2, s.date, s.creneau, s.typeTraining, s.typeSeance]
           .join(' ')
           .toLowerCase()
           .includes(query)
@@ -226,7 +228,7 @@ function renderTable() {
   selectedIds.forEach((id) => { if (!validIds.has(id)) selectedIds.delete(id); });
 
   if (filtered.length === 0) {
-    body.innerHTML = '<tr><td colspan="14" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="16" class="empty">Aucune séance enregistrée.</td></tr>';
     updateSelectionUi(filtered);
     return;
   }
@@ -243,7 +245,9 @@ function renderTable() {
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
       <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
       <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
+      <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
@@ -281,7 +285,9 @@ function openOpenModal() {
   document.getElementById('open-heureDebut').value = nowHm();
   document.getElementById('open-nomTri').value = '';
   document.getElementById('open-nomCdb').value = '';
+  document.getElementById('open-nomCdb2').value = '';
   document.getElementById('open-nomFo').value = '';
+  document.getElementById('open-nomFo2').value = '';
   document.getElementById('open-typeTraining').value = '';
   document.getElementById('open-typeSeance').value = '';
   document.getElementById('open-error').textContent = '';
@@ -306,6 +312,9 @@ async function handleOpenSubmit(e) {
     document.getElementById('open-error').textContent = 'Merci de remplir tous les champs.';
     return;
   }
+
+  payload.nomCdb2 = document.getElementById('open-nomCdb2').value.trim();
+  payload.nomFo2 = document.getElementById('open-nomFo2').value.trim();
 
   const session = {
     id: uuid(),
@@ -376,7 +385,7 @@ function clearSignatureCanvas() {
 function openCloseModal(session) {
   closingSessionId = session.id;
   document.getElementById('close-summary').textContent =
-    `${formatDate(session.date)} · ${session.creneau} · TRI ${session.nomTri} · CPT ${session.nomCdb} · FO ${session.nomFo} · ${session.typeTraining}/${session.typeSeance}`;
+    `${formatDate(session.date)} · ${session.creneau} · TRI ${session.nomTri} · CPT ${session.nomCdb}${session.nomCdb2 ? ` / ${session.nomCdb2}` : ''} · FO ${session.nomFo}${session.nomFo2 ? ` / ${session.nomFo2}` : ''} · ${session.typeTraining}/${session.typeSeance}`;
   document.getElementById('close-heureFin').value = nowHm();
   document.getElementById('close-remarques').value = '';
   document.getElementById('close-error').textContent = '';
@@ -556,8 +565,10 @@ function drawSessionPdf(doc, session) {
     ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status)],
     ['TRI/TRE', session.nomTri, '#a020f0'],
     ['CPT', session.nomCdb, '#0091ff'],
-    ['FO', session.nomFo, '#00c2a8'],
   ];
+  if (session.nomCdb2) rows.push(['CPT 2', session.nomCdb2, '#0091ff']);
+  rows.push(['FO', session.nomFo, '#00c2a8']);
+  if (session.nomFo2) rows.push(['FO 2', session.nomFo2, '#00c2a8']);
 
   let y = y0 + 13;
   rows.forEach(([label, value, color]) => {
@@ -606,8 +617,8 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
   doc.setTextColor(20, 24, 40);
   doc.text(title, 14, headerY - 5);
 
-  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CPT', 'FO', 'Training', 'Séance', 'Statut'];
-  const colX = [14, 24, 42, 60, 74, 88, 100, 130, 160, 190, 210, 226];
+  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CPT', 'CPT 2', 'FO', 'FO 2', 'Training', 'Séance', 'Statut'];
+  const colX = [14, 22, 38, 50, 62, 74, 84, 108, 132, 156, 178, 200, 216, 232];
   let y = headerY + 6;
 
   doc.setFontSize(8);
@@ -615,7 +626,7 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
   headers.forEach((h, i) => doc.text(h, colX[i], y));
   y += 2;
   doc.setDrawColor(210, 214, 222);
-  doc.line(14, y, 245, y);
+  doc.line(14, y, 250, y);
   y += 5;
 
   sessionsToPrint.forEach((s) => {
@@ -632,14 +643,16 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
       { v: formatDuration(s.date, s.heureDebut, s.heureFin), color: '#eab308' },
       { v: s.nomTri, color: '#a020f0' },
       { v: s.nomCdb, color: '#0091ff' },
+      { v: s.nomCdb2 || '—', color: s.nomCdb2 ? '#0091ff' : null },
       { v: s.nomFo, color: '#00c2a8' },
+      { v: s.nomFo2 || '—', color: s.nomFo2 ? '#00c2a8' : null },
       { v: s.typeTraining, color: badgeHex(s.typeTraining) },
       { v: s.typeSeance, color: badgeHex(s.typeSeance) },
       { v: s.status === 'cloturee' ? 'Clôturée' : 'Ouverte', color: badgeHex(s.status) },
     ];
     cells.forEach((cell, i) => {
       setPdfColor(doc, cell.color);
-      doc.text(String(cell.v ?? '—'), colX[i], y, { maxWidth: (colX[i + 1] || 245) - colX[i] - 2 });
+      doc.text(String(cell.v ?? '—'), colX[i], y, { maxWidth: (colX[i + 1] || 250) - colX[i] - 2 });
     });
     y += 6;
   });
@@ -723,7 +736,7 @@ function openAdminModal() {
 function renderAdminTable() {
   const body = document.getElementById('admin-body');
   if (sessions.length === 0) {
-    body.innerHTML = '<tr><td colspan="13" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="15" class="empty">Aucune séance enregistrée.</td></tr>';
     return;
   }
   body.innerHTML = sessions
@@ -737,7 +750,9 @@ function renderAdminTable() {
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
       <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
       <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
+      <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>

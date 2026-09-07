@@ -153,7 +153,9 @@ async function sessionPdfBuffer(session) {
   let y3 = Math.max(y1, y2) + 10;
   y3 = drawField(doc, col1, y3, 'TRI/TRE (instructeur)', session.nomTri, '#a020f0');
   y3 = drawField(doc, col1, y3, 'CPT', session.nomCdb, '#0091ff');
+  if (session.nomCdb2) y3 = drawField(doc, col1, y3, 'CPT 2', session.nomCdb2, '#0091ff');
   y3 = drawField(doc, col1, y3, 'FO', session.nomFo, '#00c2a8');
+  if (session.nomFo2) y3 = drawField(doc, col1, y3, 'FO 2', session.nomFo2, '#00c2a8');
 
   doc.x = col1;
   doc.y = y3 + 6;
@@ -191,8 +193,8 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
     : 'Registre complet des séances';
   drawHeader(doc, title);
 
-  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CPT', 'FO', 'Training', 'Séance', 'Statut'];
-  const widths = [30, 60, 45, 40, 40, 45, 85, 85, 85, 55, 50, 60];
+  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CPT', 'CPT 2', 'FO', 'FO 2', 'Training', 'Séance', 'Statut'];
+  const widths = [25, 55, 38, 35, 35, 38, 70, 70, 70, 65, 65, 48, 45, 53];
   let y = doc.y;
   const startX = doc.page.margins.left;
 
@@ -225,7 +227,9 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
         formatDuration(s.date, s.heureDebut, s.heureFin),
         s.nomTri,
         s.nomCdb,
+        s.nomCdb2 || '—',
         s.nomFo,
+        s.nomFo2 || '—',
         s.typeTraining,
         s.typeSeance,
         s.status === 'cloturee' ? 'Clôturée' : 'Ouverte',
@@ -240,7 +244,9 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
           '#eab308',
           '#a020f0',
           '#0091ff',
+          s.nomCdb2 ? '#0091ff' : null,
           '#00c2a8',
+          s.nomFo2 ? '#00c2a8' : null,
           badgeHex(s.typeTraining),
           badgeHex(s.typeSeance),
           badgeHex(s.status),

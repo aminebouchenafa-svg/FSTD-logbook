@@ -98,7 +98,9 @@
                 <th>Durée</th>
                 <th>TRI</th>
                 <th>CPT</th>
+                <th>CPT 2</th>
                 <th>FO</th>
+                <th>FO 2</th>
                 <th>Training</th>
                 <th>Séance</th>
                 <th>Statut</th>
@@ -106,7 +108,7 @@
               </tr>
             </thead>
             <tbody id="sessions-body">
-              <tr><td colspan="14" class="empty">Chargement…</td></tr>
+              <tr><td colspan="16" class="empty">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
@@ -177,7 +179,9 @@
                 <th>Durée</th>
                 <th>TRI/TRE</th>
                 <th>CPT</th>
+                <th>CPT 2</th>
                 <th>FO</th>
+                <th>FO 2</th>
                 <th>Qualification</th>
                 <th>Simulation</th>
                 <th>Statut</th>
@@ -227,9 +231,17 @@
             Nom du Commandant (CPT)
             <input type="text" id="open-nomCdb" class="input-cdb" required />
           </label>
+          <label class="label-cdb">
+            CPT 2 (optionnel)
+            <input type="text" id="open-nomCdb2" class="input-cdb" />
+          </label>
           <label class="label-fo">
             Nom du Copilote (FO)
             <input type="text" id="open-nomFo" class="input-fo" required />
+          </label>
+          <label class="label-fo">
+            FO 2 (optionnel)
+            <input type="text" id="open-nomFo2" class="input-fo" />
           </label>
           <label class="label-training">
             Qualification de Type (Type Rating)
