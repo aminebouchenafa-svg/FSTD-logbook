@@ -472,10 +472,10 @@ tbody tr:hover {
   border-style: solid;
 }
 
-.badge-qt { background: var(--info-soft); color: var(--info); border-color: rgba(0, 145, 255, 0.4); box-shadow: 0 0 10px rgba(0, 145, 255, 0.25); }
-.badge-rec { background: var(--success-soft); color: var(--success); border-color: rgba(0, 200, 83, 0.4); box-shadow: 0 0 10px rgba(0, 200, 83, 0.25); }
-.badge-ffs { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
-.badge-fbs { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
+.badge-qt { background: var(--accent-soft); color: var(--accent); border-color: rgba(199, 1, 13, 0.4); box-shadow: 0 0 10px rgba(199, 1, 13, 0.25); }
+.badge-rec { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
+.badge-ffs { background: var(--orange-soft); color: var(--orange); border-color: rgba(255, 106, 0, 0.4); box-shadow: 0 0 10px rgba(255, 106, 0, 0.25); }
+.badge-fbs { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
 .badge-ouverte { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
 .badge-cloturee { background: var(--navy-soft); color: var(--navy); border-color: rgba(55, 73, 95, 0.4); box-shadow: 0 0 10px rgba(55, 73, 95, 0.25); }
 .badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
