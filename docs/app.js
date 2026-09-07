@@ -473,40 +473,62 @@ function drawLabelBadge(doc, label, x, y, hex) {
   doc.text(label, x + padX, y);
 }
 
-// Logo Air Algérie chargé une fois au démarrage (voir preloadLogo) et réutilisé
-// dans tous les PDF générés, pour que le rapport archivé porte la même image
-// que l'écran de connexion et l'en-tête de l'application.
+// Logos (icône de l'app + Air Algérie) chargés une fois au démarrage (voir
+// preloadLogo) et réutilisés dans tous les PDF générés, pour que le rapport
+// archivé porte les mêmes images que l'écran de connexion et l'en-tête.
+let appIconDataUrl = null;
 let logoDataUrl = null;
+
+async function imageToDataUrl(path) {
+  const res = await fetch(path);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 async function preloadLogo() {
   try {
-    const res = await fetch('branding/air-algerie-logo.png');
-    const blob = await res.blob();
-    logoDataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    appIconDataUrl = await imageToDataUrl('icons/icon-192.png');
+  } catch {
+    appIconDataUrl = null;
+  }
+  try {
+    logoDataUrl = await imageToDataUrl('branding/air-algerie-logo.png');
   } catch {
     logoDataUrl = null;
   }
 }
 
-// En-tête commun à tous les PDF : logo + titre + sous-titre. Retourne le y à
-// partir duquel le contenu spécifique (fiche ou tableau) doit continuer.
+// En-tête commun à tous les PDF : icône de l'app + logo Air Algérie + titre.
+// Retourne le y à partir duquel le contenu spécifique doit continuer.
 function drawPdfHeader(doc, x = 14, topY = 14) {
   let textX = x;
+
+  if (appIconDataUrl) {
+    const iconSize = 16;
+    try {
+      doc.addImage(appIconDataUrl, 'PNG', x, topY - iconSize / 2, iconSize, iconSize);
+      textX = x + iconSize + 5;
+    } catch {
+      // icône illisible : on continue sans image
+    }
+  }
+
   if (logoDataUrl) {
-    const logoW = 34;
+    const logoW = 30;
     const logoH = logoW * (184 / 999);
     try {
-      doc.addImage(logoDataUrl, 'PNG', x, topY - logoH / 2, logoW, logoH);
-      textX = x + logoW + 6;
+      doc.addImage(logoDataUrl, 'PNG', textX, topY - logoH / 2, logoW, logoH);
+      textX += logoW + 6;
     } catch {
       // logo illisible : on continue sans image
     }
   }
+
   doc.setFontSize(17);
   doc.setTextColor(20, 24, 40);
   doc.text('FSTD Logbook 737 NG', textX, topY + 2);

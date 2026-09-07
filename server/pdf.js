@@ -2,10 +2,17 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 
-// Logo Air Algérie, réutilisé dans tous les PDF pour rester cohérent avec
-// l'écran de connexion et l'en-tête de l'application.
+// Icône de l'app + logo Air Algérie, réutilisés dans tous les PDF pour rester
+// cohérent avec l'écran de connexion et l'en-tête de l'application.
+const ICON_PATH = path.join(__dirname, '..', 'public', 'icons', 'icon-192.png');
 const LOGO_PATH = path.join(__dirname, '..', 'public', 'branding', 'air-algerie-logo.png');
+let appIconBuffer = null;
 let logoBuffer = null;
+try {
+  appIconBuffer = fs.readFileSync(ICON_PATH);
+} catch {
+  appIconBuffer = null;
+}
 try {
   logoBuffer = fs.readFileSync(LOGO_PATH);
 } catch {
@@ -41,17 +48,28 @@ function drawHeader(doc, title) {
   const startX = doc.x;
   const startY = doc.y;
   let textX = startX;
-  let logoH = 0;
+  let maxH = 0;
+
+  if (appIconBuffer) {
+    const iconSize = 40;
+    try {
+      doc.image(appIconBuffer, startX, startY, { width: iconSize, height: iconSize });
+      textX = startX + iconSize + 10;
+      maxH = Math.max(maxH, iconSize);
+    } catch {
+      // icône illisible : on continue sans image
+    }
+  }
 
   if (logoBuffer) {
-    const logoW = 90;
-    logoH = logoW * (184 / 999);
+    const logoW = 80;
+    const logoH = logoW * (184 / 999);
     try {
-      doc.image(logoBuffer, startX, startY, { width: logoW });
-      textX = startX + logoW + 14;
+      doc.image(logoBuffer, textX, startY, { width: logoW });
+      textX += logoW + 14;
+      maxH = Math.max(maxH, logoH);
     } catch {
       // logo illisible : on continue sans image
-      logoH = 0;
     }
   }
 
@@ -59,7 +77,7 @@ function drawHeader(doc, title) {
   doc.fontSize(11).fillColor('#667085').text('Registre des séances simulateur', textX, doc.y);
 
   doc.x = startX;
-  doc.y = Math.max(doc.y, startY + logoH) + 8;
+  doc.y = Math.max(doc.y, startY + maxH) + 8;
   doc.fontSize(14).fillColor('#101828').text(title, startX, doc.y);
   doc.moveDown(1);
 }
