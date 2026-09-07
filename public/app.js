@@ -320,11 +320,11 @@ function renderTable(pendingIds) {
     <tr data-id="${s.id}">
       <td><input type="checkbox" class="row-select" data-id="${s.id}" ${selectedIds.has(s.id) ? 'checked' : ''}></td>
       <td>${s.numero ?? '—'}</td>
-      <td>${formatDate(s.date)}</td>
+      <td><span class="chip chip-red">${formatDate(s.date)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
       <td><span class="chip chip-navy">${s.heureDebut}</span></td>
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
-      <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
+      <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
       <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
       <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>

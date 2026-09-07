@@ -44,6 +44,8 @@
   --lime-soft: rgba(132, 204, 22, 0.14);
   --cobalt: #1d4ed8;
   --cobalt-soft: rgba(29, 78, 216, 0.12);
+  --yellow: #eab308;
+  --yellow-soft: rgba(234, 179, 8, 0.16);
   --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
   --shadow-md: 0 8px 24px rgba(28, 36, 48, 0.08);
   --shadow-lg: 0 20px 50px rgba(28, 36, 48, 0.14);
@@ -589,6 +591,8 @@ tbody tr:hover {
 .chip-violet { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
 .chip-info { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
 .chip-teal { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
+.chip-red { background: var(--accent-soft); border-color: rgba(199, 1, 13, 0.4); box-shadow: 0 0 8px rgba(199, 1, 13, 0.2); }
+.chip-yellow { background: var(--yellow-soft); border-color: rgba(234, 179, 8, 0.45); }
 
 /* Code couleur des créneaux (S1-S5), chacun avec son halo sobre. */
 .badge-s1 { background: var(--indigo-soft); color: var(--indigo); border-color: rgba(79, 70, 229, 0.4); box-shadow: 0 0 10px rgba(79, 70, 229, 0.25); }

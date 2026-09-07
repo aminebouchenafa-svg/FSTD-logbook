@@ -139,11 +139,11 @@ async function sessionPdfBuffer(session) {
   const topY = doc.y;
 
   let y1 = topY;
-  y1 = drawField(doc, col1, y1, 'Date de la séance', formatDate(session.date), null);
+  y1 = drawField(doc, col1, y1, 'Date de la séance', formatDate(session.date), '#c7010d');
   y1 = drawField(doc, col1, y1, 'Slot', session.creneau, badgeHex(session.creneau));
   y1 = drawField(doc, col1, y1, 'Heure de début', session.heureDebut, '#37495f');
   y1 = drawField(doc, col1, y1, 'Heure de fin', session.heureFin, session.heureFin ? '#ffab00' : null);
-  y1 = drawField(doc, col1, y1, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin), null);
+  y1 = drawField(doc, col1, y1, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin), '#eab308');
 
   let y2 = topY;
   y2 = drawField(doc, col2, y2, 'Qualification de Type', session.typeTraining, badgeHex(session.typeTraining));
@@ -233,11 +233,11 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
       {
         colors: [
           null,
-          null,
+          '#c7010d',
           badgeHex(s.creneau),
           '#37495f',
           s.heureFin ? '#ffab00' : null,
-          null,
+          '#eab308',
           '#a020f0',
           '#0091ff',
           '#00c2a8',

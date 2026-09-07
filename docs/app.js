@@ -236,11 +236,11 @@ function renderTable() {
     <tr data-id="${s.id}">
       <td><input type="checkbox" class="row-select" data-id="${s.id}" ${selectedIds.has(s.id) ? 'checked' : ''}></td>
       <td>${s.numero ?? '—'}</td>
-      <td>${formatDate(s.date)}</td>
+      <td><span class="chip chip-red">${formatDate(s.date)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
       <td><span class="chip chip-navy">${s.heureDebut}</span></td>
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
-      <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
+      <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
       <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
       <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
@@ -546,11 +546,11 @@ function drawSessionPdf(doc, session) {
   y0 += 2;
 
   const rows = [
-    ['Date', formatDate(session.date), null],
+    ['Date', formatDate(session.date), '#c7010d'],
     ['Slot', session.creneau, badgeHex(session.creneau)],
     ['Heure de début', session.heureDebut, '#37495f'],
     ['Heure de fin', session.heureFin || '—', session.heureFin ? '#ffab00' : null],
-    ['Durée', formatDuration(session.date, session.heureDebut, session.heureFin), null],
+    ['Durée', formatDuration(session.date, session.heureDebut, session.heureFin), '#eab308'],
     ['Qualification de Type', session.typeTraining, badgeHex(session.typeTraining)],
     ['Type de simulation', session.typeSeance, badgeHex(session.typeSeance)],
     ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status)],
@@ -625,11 +625,11 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
     }
     const cells = [
       { v: s.numero, color: null },
-      { v: formatDate(s.date), color: null },
+      { v: formatDate(s.date), color: '#c7010d' },
       { v: s.creneau, color: badgeHex(s.creneau) },
       { v: s.heureDebut, color: '#37495f' },
       { v: s.heureFin || '—', color: s.heureFin ? '#ffab00' : null },
-      { v: formatDuration(s.date, s.heureDebut, s.heureFin), color: null },
+      { v: formatDuration(s.date, s.heureDebut, s.heureFin), color: '#eab308' },
       { v: s.nomTri, color: '#a020f0' },
       { v: s.nomCdb, color: '#0091ff' },
       { v: s.nomFo, color: '#00c2a8' },
@@ -730,11 +730,11 @@ function renderAdminTable() {
     .map((s) => `
     <tr data-id="${s.id}">
       <td>${s.numero ?? '—'}</td>
-      <td>${formatDate(s.date)}</td>
+      <td><span class="chip chip-red">${formatDate(s.date)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
       <td><span class="chip chip-navy">${s.heureDebut}</span></td>
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
-      <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
+      <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
       <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
       <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
