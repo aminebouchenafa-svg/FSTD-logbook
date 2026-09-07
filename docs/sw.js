@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fstd-logbook-static-v3';
+const CACHE_NAME = 'fstd-logbook-static-v4';
 const APP_SHELL = [
   './',
   './index.html',
