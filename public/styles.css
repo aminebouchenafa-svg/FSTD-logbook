@@ -477,7 +477,7 @@ tbody tr:hover {
 .badge-ffs { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
 .badge-fbs { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
 .badge-ouverte { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
-.badge-cloturee { background: var(--success-soft); color: var(--success); border-color: rgba(0, 200, 83, 0.4); box-shadow: 0 0 10px rgba(0, 200, 83, 0.25); }
+.badge-cloturee { background: var(--navy-soft); color: var(--navy); border-color: rgba(55, 73, 95, 0.4); box-shadow: 0 0 10px rgba(55, 73, 95, 0.25); }
 .badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
 
 /* Cases colorées pour l'heure de début/fin et les noms de l'équipage dans le
@@ -520,7 +520,7 @@ tbody tr:hover {
   border-style: solid;
 }
 
-.pdf-btn { background: var(--info-soft); color: var(--info); border: 1.5px solid rgba(0, 145, 255, 0.4); }
+.pdf-btn { background: var(--pink-soft); color: var(--pink); border: 1.5px solid rgba(255, 20, 147, 0.4); }
 .delete-btn { background: var(--danger-soft); color: var(--danger); border: 1.5px solid rgba(220, 38, 38, 0.4); font-weight: 700; }
 
 /* ===== Export ===== */
