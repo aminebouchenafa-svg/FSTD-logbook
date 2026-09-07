@@ -433,9 +433,9 @@ const PDF_HEX = {
   ouverte: '#ffab00',
   cloturee: '#00bcd4',
   S1: '#4f46e5',
-  S2: '#ca8a04',
-  S3: '#9f1239',
-  S4: '#92400e',
+  S2: '#84cc16',
+  S3: '#00c853',
+  S4: '#1d4ed8',
   S5: '#ff1493',
 };
 
