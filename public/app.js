@@ -247,7 +247,7 @@ function renderOpenSessions(pendingIds) {
       <div class="chrono" data-start="${s.createdAt}" data-action="expand-chrono" data-id="${s.id}">00:00:00</div>
       <div><strong>${formatDate(s.date)}</strong> <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></div>
       <div class="crew">
-        TRI ${escapeHtml(s.nomTri)} · CDB ${escapeHtml(s.nomCdb)} · FO ${escapeHtml(s.nomFo)}
+        TRI ${escapeHtml(s.nomTri)} · CPT ${escapeHtml(s.nomCdb)} · FO ${escapeHtml(s.nomFo)}
       </div>
       <div class="badges">
         <span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span>
@@ -267,7 +267,7 @@ function openFullscreenChrono(session) {
     `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
   document.getElementById('fullscreen-crew').innerHTML = `
     <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
-    <span class="chip chip-info">CDB ${escapeHtml(session.nomCdb)}</span>
+    <span class="chip chip-info">CPT ${escapeHtml(session.nomCdb)}</span>
     <span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
@@ -468,7 +468,7 @@ function clearSignatureCanvas() {
 function openCloseModal(session) {
   closingSessionId = session.id;
   document.getElementById('close-summary').textContent =
-    `N° ${session.numero ?? '—'} · ${formatDate(session.date)} · ${session.creneau} · TRI ${session.nomTri} · CDB ${session.nomCdb} · FO ${session.nomFo} · ${session.typeTraining}/${session.typeSeance}`;
+    `${formatDate(session.date)} · ${session.creneau} · TRI ${session.nomTri} · CPT ${session.nomCdb} · FO ${session.nomFo} · ${session.typeTraining}/${session.typeSeance}`;
   document.getElementById('close-heureFin').value = nowHm();
   document.getElementById('close-pin').value = '';
   document.getElementById('close-remarques').value = '';
