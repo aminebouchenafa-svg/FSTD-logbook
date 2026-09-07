@@ -23,8 +23,8 @@
   --info-soft: rgba(0, 145, 255, 0.12);
   --violet: #a020f0;
   --violet-soft: rgba(160, 32, 240, 0.12);
-  --teal: #00c2a8;
-  --teal-soft: rgba(0, 194, 168, 0.12);
+  --teal: #0d9488;
+  --teal-soft: rgba(13, 148, 136, 0.14);
   --orange: #ff6a00;
   --orange-soft: rgba(255, 106, 0, 0.14);
   --pink: #ff1493;
@@ -119,7 +119,7 @@ label {
 .input-heurefin { background: var(--warning-soft); border-color: rgba(255, 171, 0, 0.4); }
 .input-tri { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
 .input-cdb { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
-.input-fo { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
+.input-fo { background: var(--teal-soft); border-color: rgba(13, 148, 136, 0.4); }
 .input-training { background: var(--success-soft); border-color: rgba(0, 200, 83, 0.35); }
 .input-seance { background: var(--orange-soft); border-color: rgba(255, 106, 0, 0.35); }
 
@@ -601,7 +601,7 @@ tbody tr:hover {
 .chip-navy { background: var(--navy-soft); border-color: rgba(55, 73, 95, 0.35); }
 .chip-violet { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
 .chip-info { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
-.chip-teal { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
+.chip-teal { background: var(--teal-soft); border-color: rgba(13, 148, 136, 0.4); }
 .chip-red { background: var(--accent-soft); border-color: rgba(199, 1, 13, 0.4); box-shadow: 0 0 8px rgba(199, 1, 13, 0.2); }
 .chip-yellow { background: var(--yellow-soft); border-color: rgba(234, 179, 8, 0.45); }
 

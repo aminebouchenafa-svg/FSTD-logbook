@@ -152,10 +152,10 @@ async function sessionPdfBuffer(session) {
 
   let y3 = Math.max(y1, y2) + 10;
   y3 = drawField(doc, col1, y3, 'TRI/TRE (instructeur)', session.nomTri, '#a020f0');
-  y3 = drawField(doc, col1, y3, 'CPT', session.nomCdb, '#0091ff');
+  if (session.nomCdb) y3 = drawField(doc, col1, y3, 'CPT', session.nomCdb, '#0091ff');
   if (session.nomCdb2) y3 = drawField(doc, col1, y3, 'CPT 2', session.nomCdb2, '#0091ff');
-  y3 = drawField(doc, col1, y3, 'FO', session.nomFo, '#00c2a8');
-  if (session.nomFo2) y3 = drawField(doc, col1, y3, 'FO 2', session.nomFo2, '#00c2a8');
+  if (session.nomFo) y3 = drawField(doc, col1, y3, 'FO', session.nomFo, '#0d9488');
+  if (session.nomFo2) y3 = drawField(doc, col1, y3, 'FO 2', session.nomFo2, '#0d9488');
 
   doc.x = col1;
   doc.y = y3 + 6;
@@ -226,9 +226,9 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
         s.heureFin || '—',
         formatDuration(s.date, s.heureDebut, s.heureFin),
         s.nomTri,
-        s.nomCdb,
+        s.nomCdb || '—',
         s.nomCdb2 || '—',
-        s.nomFo,
+        s.nomFo || '—',
         s.nomFo2 || '—',
         s.typeTraining,
         s.typeSeance,
@@ -243,10 +243,10 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
           s.heureFin ? '#ffab00' : null,
           '#eab308',
           '#a020f0',
-          '#0091ff',
+          s.nomCdb ? '#0091ff' : null,
           s.nomCdb2 ? '#0091ff' : null,
-          '#00c2a8',
-          s.nomFo2 ? '#00c2a8' : null,
+          s.nomFo ? '#0d9488' : null,
+          s.nomFo2 ? '#0d9488' : null,
           badgeHex(s.typeTraining),
           badgeHex(s.typeSeance),
           badgeHex(s.status),

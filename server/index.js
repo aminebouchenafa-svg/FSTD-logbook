@@ -9,7 +9,7 @@ const pdf = require('./pdf');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const REQUIRED_OPEN_FIELDS = ['date', 'creneau', 'heureDebut', 'nomTri', 'nomCdb', 'nomFo', 'typeTraining', 'typeSeance'];
+const REQUIRED_OPEN_FIELDS = ['date', 'creneau', 'heureDebut', 'nomTri', 'typeTraining', 'typeSeance'];
 const TYPE_TRAINING_VALUES = ['QT', 'REC'];
 const TYPE_SEANCE_VALUES = ['FFS', 'FBS'];
 
@@ -22,6 +22,11 @@ function validateOpen(body) {
     if (!body[field] || String(body[field]).trim() === '') {
       errors.push(`Le champ "${field}" est obligatoire.`);
     }
+  }
+  // Une séance peut n'avoir que des CPT ou que des FO (deux commandants,
+  // deux copilotes) : au moins un des quatre champs doit être renseigné.
+  if (![body.nomCdb, body.nomCdb2, body.nomFo, body.nomFo2].some((v) => v && String(v).trim() !== '')) {
+    errors.push("Merci de renseigner au moins un membre d'équipage (CPT ou FO).");
   }
   if (body.typeTraining && !TYPE_TRAINING_VALUES.includes(body.typeTraining)) {
     errors.push('Le type de training doit être "QT" ou "REC".');

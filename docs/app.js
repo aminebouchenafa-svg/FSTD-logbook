@@ -98,6 +98,17 @@ function uuid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+// Construit la ligne d'équipage en ignorant les rôles vides (une séance peut
+// n'avoir que des CPT, ou que des FO).
+function crewLine(s) {
+  const parts = [`TRI ${escapeHtml(s.nomTri)}`];
+  const cpts = [s.nomCdb, s.nomCdb2].filter(Boolean).map(escapeHtml).join(' / ');
+  if (cpts) parts.push(`CPT ${cpts}`);
+  const fos = [s.nomFo, s.nomFo2].filter(Boolean).map(escapeHtml).join(' / ');
+  if (fos) parts.push(`FO ${fos}`);
+  return parts.join(' · ');
+}
+
 function formatDuration(date, heureDebut, heureFin) {
   if (!heureFin) return '—';
   const start = new Date(`${date}T${heureDebut}:00`);
@@ -167,7 +178,7 @@ function renderOpenSessions() {
       <div class="chrono" data-start="${s.createdAt}" data-action="expand-chrono" data-id="${s.id}">00:00:00</div>
       <div><strong>${formatDate(s.date)}</strong> <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></div>
       <div class="crew">
-        TRI ${escapeHtml(s.nomTri)} · CPT ${escapeHtml(s.nomCdb)}${s.nomCdb2 ? ` / ${escapeHtml(s.nomCdb2)}` : ''} · FO ${escapeHtml(s.nomFo)}${s.nomFo2 ? ` / ${escapeHtml(s.nomFo2)}` : ''}
+        ${crewLine(s)}
       </div>
       <div class="badges">
         <span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span>
@@ -197,9 +208,9 @@ function openFullscreenChrono(session) {
     `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
   document.getElementById('fullscreen-crew').innerHTML = `
     <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
-    <span class="chip chip-info">CPT ${escapeHtml(session.nomCdb)}</span>
+    ${session.nomCdb ? `<span class="chip chip-info">CPT ${escapeHtml(session.nomCdb)}</span>` : ''}
     ${session.nomCdb2 ? `<span class="chip chip-info">CPT 2 ${escapeHtml(session.nomCdb2)}</span>` : ''}
-    <span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>
+    ${session.nomFo ? `<span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>` : ''}
     ${session.nomFo2 ? `<span class="chip chip-teal">FO 2 ${escapeHtml(session.nomFo2)}</span>` : ''}
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
@@ -244,9 +255,9 @@ function renderTable() {
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
-      <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td>${s.nomCdb ? `<span class="chip chip-info">${escapeHtml(s.nomCdb)}</span>` : '—'}</td>
       <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
-      <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
+      <td>${s.nomFo ? `<span class="chip chip-teal">${escapeHtml(s.nomFo)}</span>` : '—'}</td>
       <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
@@ -301,8 +312,6 @@ async function handleOpenSubmit(e) {
     creneau: document.getElementById('open-creneau').value,
     heureDebut: document.getElementById('open-heureDebut').value,
     nomTri: document.getElementById('open-nomTri').value.trim(),
-    nomCdb: document.getElementById('open-nomCdb').value.trim(),
-    nomFo: document.getElementById('open-nomFo').value.trim(),
     typeTraining: document.getElementById('open-typeTraining').value,
     typeSeance: document.getElementById('open-typeSeance').value,
   };
@@ -313,8 +322,15 @@ async function handleOpenSubmit(e) {
     return;
   }
 
+  payload.nomCdb = document.getElementById('open-nomCdb').value.trim();
   payload.nomCdb2 = document.getElementById('open-nomCdb2').value.trim();
+  payload.nomFo = document.getElementById('open-nomFo').value.trim();
   payload.nomFo2 = document.getElementById('open-nomFo2').value.trim();
+
+  if (!payload.nomCdb && !payload.nomCdb2 && !payload.nomFo && !payload.nomFo2) {
+    document.getElementById('open-error').textContent = "Merci de renseigner au moins un membre d'équipage (CPT ou FO).";
+    return;
+  }
 
   const session = {
     id: uuid(),
@@ -384,8 +400,13 @@ function clearSignatureCanvas() {
 
 function openCloseModal(session) {
   closingSessionId = session.id;
-  document.getElementById('close-summary').textContent =
-    `${formatDate(session.date)} · ${session.creneau} · TRI ${session.nomTri} · CPT ${session.nomCdb}${session.nomCdb2 ? ` / ${session.nomCdb2}` : ''} · FO ${session.nomFo}${session.nomFo2 ? ` / ${session.nomFo2}` : ''} · ${session.typeTraining}/${session.typeSeance}`;
+  const summaryParts = [formatDate(session.date), session.creneau, `TRI ${session.nomTri}`];
+  const cpts = [session.nomCdb, session.nomCdb2].filter(Boolean).join(' / ');
+  if (cpts) summaryParts.push(`CPT ${cpts}`);
+  const fos = [session.nomFo, session.nomFo2].filter(Boolean).join(' / ');
+  if (fos) summaryParts.push(`FO ${fos}`);
+  summaryParts.push(`${session.typeTraining}/${session.typeSeance}`);
+  document.getElementById('close-summary').textContent = summaryParts.join(' · ');
   document.getElementById('close-heureFin').value = nowHm();
   document.getElementById('close-remarques').value = '';
   document.getElementById('close-error').textContent = '';
@@ -564,11 +585,11 @@ function drawSessionPdf(doc, session) {
     ['Type de simulation', session.typeSeance, badgeHex(session.typeSeance)],
     ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status)],
     ['TRI/TRE', session.nomTri, '#a020f0'],
-    ['CPT', session.nomCdb, '#0091ff'],
   ];
+  if (session.nomCdb) rows.push(['CPT', session.nomCdb, '#0091ff']);
   if (session.nomCdb2) rows.push(['CPT 2', session.nomCdb2, '#0091ff']);
-  rows.push(['FO', session.nomFo, '#00c2a8']);
-  if (session.nomFo2) rows.push(['FO 2', session.nomFo2, '#00c2a8']);
+  if (session.nomFo) rows.push(['FO', session.nomFo, '#0d9488']);
+  if (session.nomFo2) rows.push(['FO 2', session.nomFo2, '#0d9488']);
 
   let y = y0 + 13;
   rows.forEach(([label, value, color]) => {
@@ -642,10 +663,10 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
       { v: s.heureFin || '—', color: s.heureFin ? '#ffab00' : null },
       { v: formatDuration(s.date, s.heureDebut, s.heureFin), color: '#eab308' },
       { v: s.nomTri, color: '#a020f0' },
-      { v: s.nomCdb, color: '#0091ff' },
+      { v: s.nomCdb || '—', color: s.nomCdb ? '#0091ff' : null },
       { v: s.nomCdb2 || '—', color: s.nomCdb2 ? '#0091ff' : null },
-      { v: s.nomFo, color: '#00c2a8' },
-      { v: s.nomFo2 || '—', color: s.nomFo2 ? '#00c2a8' : null },
+      { v: s.nomFo || '—', color: s.nomFo ? '#0d9488' : null },
+      { v: s.nomFo2 || '—', color: s.nomFo2 ? '#0d9488' : null },
       { v: s.typeTraining, color: badgeHex(s.typeTraining) },
       { v: s.typeSeance, color: badgeHex(s.typeSeance) },
       { v: s.status === 'cloturee' ? 'Clôturée' : 'Ouverte', color: badgeHex(s.status) },
@@ -749,9 +770,9 @@ function renderAdminTable() {
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
       <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
-      <td><span class="chip chip-info">${escapeHtml(s.nomCdb)}</span></td>
+      <td>${s.nomCdb ? `<span class="chip chip-info">${escapeHtml(s.nomCdb)}</span>` : '—'}</td>
       <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
-      <td><span class="chip chip-teal">${escapeHtml(s.nomFo)}</span></td>
+      <td>${s.nomFo ? `<span class="chip chip-teal">${escapeHtml(s.nomFo)}</span>` : '—'}</td>
       <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
