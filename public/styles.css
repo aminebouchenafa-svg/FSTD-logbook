@@ -35,6 +35,17 @@
   --forest-soft: rgba(27, 122, 61, 0.12);
   --cyan: #00bcd4;
   --cyan-soft: rgba(0, 188, 212, 0.12);
+  /* Palette dédiée aux créneaux (S1-S5) : volontairement différente des
+     couleurs déjà prises par TRI/CPT/FO et par QT/REC/FFS/FBS, pour éviter
+     que deux badges se retrouvent avec la même couleur sur une même fiche. */
+  --indigo: #4f46e5;
+  --indigo-soft: rgba(79, 70, 229, 0.12);
+  --gold: #ca8a04;
+  --gold-soft: rgba(202, 138, 4, 0.14);
+  --maroon: #9f1239;
+  --maroon-soft: rgba(159, 18, 57, 0.12);
+  --brown: #92400e;
+  --brown-soft: rgba(146, 64, 14, 0.14);
   --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
   --shadow-md: 0 8px 24px rgba(28, 36, 48, 0.08);
   --shadow-lg: 0 20px 50px rgba(28, 36, 48, 0.14);
@@ -195,6 +206,10 @@ button.small {
   display: none;
 }
 
+.auth-screen.fade-out {
+  animation: authFadeOut 0.35s ease forwards;
+}
+
 .auth-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -203,6 +218,61 @@ button.small {
   max-width: 440px;
   width: 100%;
   box-shadow: var(--shadow-lg);
+  animation: authCardIn 0.5s ease;
+}
+
+.auth-card.shake {
+  animation: authShake 0.4s ease;
+}
+
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes authFadeOut {
+  to { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes authShake {
+  10%, 90% { transform: translateX(-4px); }
+  20%, 80% { transform: translateX(6px); }
+  30%, 50%, 70% { transform: translateX(-8px); }
+  40%, 60% { transform: translateX(8px); }
+}
+
+/* Bouton de connexion : petit spinner blanc pendant la vérification. */
+button.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+button.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2.5px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes appEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#app-screen:not([hidden]) {
+  animation: appEnter 0.5s ease;
 }
 
 .brand {
@@ -506,10 +576,10 @@ tbody tr:hover {
 .chip-teal { background: var(--teal-soft); border-color: rgba(0, 194, 168, 0.35); }
 
 /* Code couleur des créneaux (S1-S5), chacun avec son halo sobre. */
-.badge-s1 { background: var(--info-soft); color: var(--info); border-color: rgba(0, 145, 255, 0.4); box-shadow: 0 0 10px rgba(0, 145, 255, 0.25); }
-.badge-s2 { background: var(--teal-soft); color: var(--teal); border-color: rgba(0, 194, 168, 0.4); box-shadow: 0 0 10px rgba(0, 194, 168, 0.25); }
-.badge-s3 { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
-.badge-s4 { background: var(--orange-soft); color: var(--orange); border-color: rgba(255, 106, 0, 0.4); box-shadow: 0 0 10px rgba(255, 106, 0, 0.25); }
+.badge-s1 { background: var(--indigo-soft); color: var(--indigo); border-color: rgba(79, 70, 229, 0.4); box-shadow: 0 0 10px rgba(79, 70, 229, 0.25); }
+.badge-s2 { background: var(--gold-soft); color: var(--gold); border-color: rgba(202, 138, 4, 0.4); box-shadow: 0 0 10px rgba(202, 138, 4, 0.25); }
+.badge-s3 { background: var(--maroon-soft); color: var(--maroon); border-color: rgba(159, 18, 57, 0.4); box-shadow: 0 0 10px rgba(159, 18, 57, 0.25); }
+.badge-s4 { background: var(--brown-soft); color: var(--brown); border-color: rgba(146, 64, 14, 0.4); box-shadow: 0 0 10px rgba(146, 64, 14, 0.25); }
 .badge-s5 { background: var(--pink-soft); color: var(--pink); border-color: rgba(255, 20, 147, 0.4); box-shadow: 0 0 10px rgba(255, 20, 147, 0.25); }
 
 .row-actions {

@@ -432,10 +432,10 @@ const PDF_HEX = {
   FBS: '#1b7a3d',
   ouverte: '#ffab00',
   cloturee: '#00bcd4',
-  S1: '#0091ff',
-  S2: '#00c2a8',
-  S3: '#a020f0',
-  S4: '#ff6a00',
+  S1: '#4f46e5',
+  S2: '#ca8a04',
+  S3: '#9f1239',
+  S4: '#92400e',
   S5: '#ff1493',
 };
 
@@ -703,13 +703,28 @@ function bindEvents() {
     e.preventDefault();
     const pin = document.getElementById('login-pin').value;
     const errorEl = document.getElementById('login-error');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const authScreen = document.getElementById('auth-screen');
+
     if (PASSWORDS.includes(pin)) {
-      sessionStorage.setItem(AUTH_KEY, '1');
       errorEl.textContent = '';
-      showAppScreen();
-      renderAll();
+      submitBtn.classList.add('btn-loading');
+      setTimeout(() => {
+        sessionStorage.setItem(AUTH_KEY, '1');
+        authScreen.classList.add('fade-out');
+        setTimeout(() => {
+          submitBtn.classList.remove('btn-loading');
+          authScreen.classList.remove('fade-out');
+          showAppScreen();
+          renderAll();
+        }, 350);
+      }, 400);
     } else {
       errorEl.textContent = 'Mot de passe incorrect.';
+      const card = document.querySelector('.auth-card');
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
     }
   });
 

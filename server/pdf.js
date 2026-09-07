@@ -42,10 +42,10 @@ const BADGE_HEX = {
   FBS: '#1b7a3d',
   ouverte: '#ffab00',
   cloturee: '#00bcd4',
-  S1: '#0091ff',
-  S2: '#00c2a8',
-  S3: '#a020f0',
-  S4: '#ff6a00',
+  S1: '#4f46e5',
+  S2: '#ca8a04',
+  S3: '#9f1239',
+  S4: '#92400e',
   S5: '#ff1493',
 };
 

@@ -647,19 +647,33 @@ function bindEvents() {
     const name = document.getElementById('login-name').value.trim();
     const pin = document.getElementById('login-pin').value;
     const errorEl = document.getElementById('login-error');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const authScreen = document.getElementById('auth-screen');
     errorEl.textContent = '';
+    submitBtn.classList.add('btn-loading');
     try {
       const res = await apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ name, pin }) }, null);
       const body = await res.json();
       if (!res.ok) {
+        submitBtn.classList.remove('btn-loading');
         errorEl.textContent = (body.errors || []).join('\n') || 'Connexion impossible.';
+        const card = document.querySelector('.auth-card');
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
         return;
       }
       const pinVerifier = await sha256Hex(`${pin}:${body.user.id}`);
       saveAuth({ token: body.token, user: body.user, pinVerifier });
-      showAppScreen();
-      await syncAndRender();
+      authScreen.classList.add('fade-out');
+      setTimeout(async () => {
+        submitBtn.classList.remove('btn-loading');
+        authScreen.classList.remove('fade-out');
+        showAppScreen();
+        await syncAndRender();
+      }, 350);
     } catch {
+      submitBtn.classList.remove('btn-loading');
       errorEl.textContent = 'Connexion impossible (réseau indisponible). Réessayez une fois en ligne pour votre première connexion.';
     }
   });
