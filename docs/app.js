@@ -423,6 +423,35 @@ async function handleCloseSubmit(e) {
 
 const { jsPDF } = window.jspdf;
 
+// Mêmes couleurs que les badges à l'écran, pour que le PDF archivé reste
+// cohérent avec l'application (QT rouge, REC bleu électrique, etc.).
+const PDF_HEX = {
+  QT: '#c7010d',
+  REC: '#0066ff',
+  FFS: '#ff6a00',
+  FBS: '#1b7a3d',
+  ouverte: '#ffab00',
+  cloturee: '#00bcd4',
+  S1: '#0091ff',
+  S2: '#00c2a8',
+  S3: '#a020f0',
+  S4: '#ff6a00',
+  S5: '#ff1493',
+};
+
+function badgeHex(type) {
+  return PDF_HEX[type] || null;
+}
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function setPdfColor(doc, hex, fallback = [20, 24, 40]) {
+  doc.setTextColor(...(hex ? hexToRgb(hex) : fallback));
+}
+
 function drawSessionPdf(doc, session, y0 = 20) {
   doc.setFontSize(16);
   doc.setTextColor(20, 24, 40);
@@ -435,25 +464,25 @@ function drawSessionPdf(doc, session, y0 = 20) {
   doc.text(`Fiche de séance n° ${session.numero}`, 14, y0 + 16);
 
   const rows = [
-    ['Date', formatDate(session.date)],
-    ['Slot', session.creneau],
-    ['Heure de début', session.heureDebut],
-    ['Heure de fin', session.heureFin || '—'],
-    ['Durée', formatDuration(session.date, session.heureDebut, session.heureFin)],
-    ['Type de training', session.typeTraining],
-    ['Type de séance', session.typeSeance],
-    ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte'],
-    ['TRI', session.nomTri],
-    ['CPT', session.nomCdb],
-    ['FO', session.nomFo],
+    ['Date', formatDate(session.date), null],
+    ['Slot', session.creneau, badgeHex(session.creneau)],
+    ['Heure de début', session.heureDebut, '#37495f'],
+    ['Heure de fin', session.heureFin || '—', session.heureFin ? '#ffab00' : null],
+    ['Durée', formatDuration(session.date, session.heureDebut, session.heureFin), null],
+    ['Qualification de Type', session.typeTraining, badgeHex(session.typeTraining)],
+    ['Type de simulation', session.typeSeance, badgeHex(session.typeSeance)],
+    ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status)],
+    ['TRI/TRE', session.nomTri, '#a020f0'],
+    ['CPT', session.nomCdb, '#0091ff'],
+    ['FO', session.nomFo, '#00c2a8'],
   ];
 
   let y = y0 + 26;
   doc.setFontSize(10);
-  rows.forEach(([label, value]) => {
+  rows.forEach(([label, value, color]) => {
     doc.setTextColor(100, 110, 130);
     doc.text(`${label}`, 14, y);
-    doc.setTextColor(20, 24, 40);
+    setPdfColor(doc, color);
     doc.text(String(value ?? '—'), 60, y);
     y += 7;
   });
@@ -506,13 +535,24 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
       doc.addPage('a4', 'landscape');
       y = 20;
     }
-    const values = [
-      s.numero, formatDate(s.date), s.creneau, s.heureDebut, s.heureFin || '—',
-      formatDuration(s.date, s.heureDebut, s.heureFin), s.nomTri, s.nomCdb, s.nomFo,
-      s.typeTraining, s.typeSeance, s.status === 'cloturee' ? 'Clôturée' : 'Ouverte',
+    const cells = [
+      { v: s.numero, color: null },
+      { v: formatDate(s.date), color: null },
+      { v: s.creneau, color: badgeHex(s.creneau) },
+      { v: s.heureDebut, color: '#37495f' },
+      { v: s.heureFin || '—', color: s.heureFin ? '#ffab00' : null },
+      { v: formatDuration(s.date, s.heureDebut, s.heureFin), color: null },
+      { v: s.nomTri, color: '#a020f0' },
+      { v: s.nomCdb, color: '#0091ff' },
+      { v: s.nomFo, color: '#00c2a8' },
+      { v: s.typeTraining, color: badgeHex(s.typeTraining) },
+      { v: s.typeSeance, color: badgeHex(s.typeSeance) },
+      { v: s.status === 'cloturee' ? 'Clôturée' : 'Ouverte', color: badgeHex(s.status) },
     ];
-    doc.setTextColor(20, 24, 40);
-    values.forEach((v, i) => doc.text(String(v ?? '—'), colX[i], y, { maxWidth: (colX[i + 1] || 245) - colX[i] - 2 }));
+    cells.forEach((cell, i) => {
+      setPdfColor(doc, cell.color);
+      doc.text(String(cell.v ?? '—'), colX[i], y, { maxWidth: (colX[i + 1] || 245) - colX[i] - 2 });
+    });
     y += 6;
   });
 }

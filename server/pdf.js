@@ -33,9 +33,29 @@ function drawHeader(doc, title) {
   doc.moveDown(1);
 }
 
-function labelValue(doc, label, value, opts = {}) {
+// Mêmes couleurs que les badges de l'application, pour que le PDF archivé
+// reste cohérent avec l'écran (QT rouge, REC bleu électrique, etc.).
+const BADGE_HEX = {
+  QT: '#c7010d',
+  REC: '#0066ff',
+  FFS: '#ff6a00',
+  FBS: '#1b7a3d',
+  ouverte: '#ffab00',
+  cloturee: '#00bcd4',
+  S1: '#0091ff',
+  S2: '#00c2a8',
+  S3: '#a020f0',
+  S4: '#ff6a00',
+  S5: '#ff1493',
+};
+
+function badgeHex(type) {
+  return BADGE_HEX[type] || '#101828';
+}
+
+function labelValue(doc, label, value, opts = {}, color = '#101828') {
   doc.fontSize(9).fillColor('#667085').text(label, opts);
-  doc.fontSize(12).fillColor('#101828').text(value || '—');
+  doc.fontSize(12).fillColor(color).text(value || '—');
   doc.moveDown(0.6);
 }
 
@@ -52,23 +72,23 @@ async function sessionPdfBuffer(session) {
   doc.x = col1;
   doc.y = topY;
   labelValue(doc, 'Date de la séance', formatDate(session.date));
-  labelValue(doc, 'Slot', session.creneau);
-  labelValue(doc, 'Heure de début', session.heureDebut);
-  labelValue(doc, 'Heure de fin', session.heureFin);
+  labelValue(doc, 'Slot', session.creneau, {}, badgeHex(session.creneau));
+  labelValue(doc, 'Heure de début', session.heureDebut, {}, '#37495f');
+  labelValue(doc, 'Heure de fin', session.heureFin, {}, session.heureFin ? '#ffab00' : '#101828');
   labelValue(doc, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin));
 
   doc.x = col2;
   doc.y = topY;
-  labelValue(doc, 'Type de training', session.typeTraining);
-  labelValue(doc, 'Type de séance', session.typeSeance);
-  labelValue(doc, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte');
+  labelValue(doc, 'Qualification de Type', session.typeTraining, {}, badgeHex(session.typeTraining));
+  labelValue(doc, 'Type de simulation', session.typeSeance, {}, badgeHex(session.typeSeance));
+  labelValue(doc, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', {}, badgeHex(session.status));
 
   doc.x = col1;
   doc.y = Math.max(doc.y, topY + 5 * 40) + 10;
 
-  labelValue(doc, 'TRI (instructeur)', session.nomTri);
-  labelValue(doc, 'CPT', session.nomCdb);
-  labelValue(doc, 'FO', session.nomFo);
+  labelValue(doc, 'TRI/TRE (instructeur)', session.nomTri, {}, '#a020f0');
+  labelValue(doc, 'CPT', session.nomCdb, {}, '#0091ff');
+  labelValue(doc, 'FO', session.nomFo, {}, '#00c2a8');
 
   doc.moveDown(0.5);
   doc.fontSize(9).fillColor('#667085').text('Remarques');
@@ -112,8 +132,9 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
 
   function drawRow(values, opts = {}) {
     let x = startX;
-    doc.fontSize(9).fillColor(opts.header ? '#667085' : '#101828');
+    const colors = opts.colors || [];
     values.forEach((v, i) => {
+      doc.fontSize(9).fillColor(opts.header ? '#667085' : (colors[i] || '#101828'));
       doc.text(String(v ?? ''), x, y, { width: widths[i], ellipsis: true });
       x += widths[i];
     });
@@ -128,20 +149,38 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
       doc.addPage({ margin: 40, layout: 'landscape' });
       y = doc.page.margins.top;
     }
-    drawRow([
-      s.numero,
-      formatDate(s.date),
-      s.creneau,
-      s.heureDebut,
-      s.heureFin || '—',
-      formatDuration(s.date, s.heureDebut, s.heureFin),
-      s.nomTri,
-      s.nomCdb,
-      s.nomFo,
-      s.typeTraining,
-      s.typeSeance,
-      s.status === 'cloturee' ? 'Clôturée' : 'Ouverte',
-    ]);
+    drawRow(
+      [
+        s.numero,
+        formatDate(s.date),
+        s.creneau,
+        s.heureDebut,
+        s.heureFin || '—',
+        formatDuration(s.date, s.heureDebut, s.heureFin),
+        s.nomTri,
+        s.nomCdb,
+        s.nomFo,
+        s.typeTraining,
+        s.typeSeance,
+        s.status === 'cloturee' ? 'Clôturée' : 'Ouverte',
+      ],
+      {
+        colors: [
+          null,
+          null,
+          badgeHex(s.creneau),
+          '#37495f',
+          s.heureFin ? '#ffab00' : null,
+          null,
+          '#a020f0',
+          '#0091ff',
+          '#00c2a8',
+          badgeHex(s.typeTraining),
+          badgeHex(s.typeSeance),
+          badgeHex(s.status),
+        ],
+      }
+    );
   });
 
   doc.end();
