@@ -322,7 +322,7 @@ function renderTable(pendingIds) {
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
-      <td class="cell-heure">${s.heureDebut}</td>
+      <td>${s.heureDebut}</td>
       <td>${s.heureFin || '—'}</td>
       <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
       <td>${escapeHtml(s.nomTri)}</td>

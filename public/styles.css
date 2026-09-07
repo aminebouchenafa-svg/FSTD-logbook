@@ -86,12 +86,6 @@ label {
 .input-cdb { color: var(--info); }
 .input-fo { color: var(--teal); }
 
-.cell-heure {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--navy);
-}
-
 input, select, textarea {
   font: inherit;
   padding: 0.65rem 0.7rem;
@@ -447,29 +441,31 @@ tbody tr:hover {
 }
 
 /* Badges "importants" (qualification, simulation, créneau) : plus grands,
-   couleur pleine et halo lumineux façon néon derrière chaque couleur. */
+   texte coloré sur fond teinté sobre avec une bordure de la même couleur
+   (un léger halo derrière, pas un remplissage plein). */
 .badge-lg {
   padding: 0.45rem 1.1rem;
   font-size: 1.05rem;
   font-weight: 800;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  border-width: 1.5px;
+  border-style: solid;
 }
 
-.badge-qt { background: var(--info); box-shadow: 0 0 18px 3px rgba(0, 145, 255, 0.55); }
-.badge-rec { background: var(--success); box-shadow: 0 0 18px 3px rgba(0, 200, 83, 0.55); }
-.badge-ffs { background: var(--warning); box-shadow: 0 0 18px 3px rgba(255, 171, 0, 0.55); }
-.badge-fbs { background: var(--violet); box-shadow: 0 0 18px 3px rgba(160, 32, 240, 0.55); }
+.badge-qt { background: var(--info-soft); color: var(--info); border-color: rgba(0, 145, 255, 0.4); box-shadow: 0 0 10px rgba(0, 145, 255, 0.25); }
+.badge-rec { background: var(--success-soft); color: var(--success); border-color: rgba(0, 200, 83, 0.4); box-shadow: 0 0 10px rgba(0, 200, 83, 0.25); }
+.badge-ffs { background: var(--warning-soft); color: var(--warning); border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 0 10px rgba(255, 171, 0, 0.25); }
+.badge-fbs { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
 .badge-ouverte { background: var(--warning-soft); color: var(--warning); }
 .badge-cloturee { background: var(--success-soft); color: var(--success); }
 .badge-pending { background: var(--bg-elevated-2); color: var(--muted); }
 
-/* Code couleur des créneaux (S1-S5), chacun avec son halo néon. */
-.badge-s1 { background: var(--info); box-shadow: 0 0 18px 3px rgba(0, 145, 255, 0.55); }
-.badge-s2 { background: var(--teal); box-shadow: 0 0 18px 3px rgba(0, 194, 168, 0.55); }
-.badge-s3 { background: var(--violet); box-shadow: 0 0 18px 3px rgba(160, 32, 240, 0.55); }
-.badge-s4 { background: var(--orange); box-shadow: 0 0 18px 3px rgba(255, 106, 0, 0.55); }
-.badge-s5 { background: var(--pink); box-shadow: 0 0 18px 3px rgba(255, 20, 147, 0.55); }
+/* Code couleur des créneaux (S1-S5), chacun avec son halo sobre. */
+.badge-s1 { background: var(--info-soft); color: var(--info); border-color: rgba(0, 145, 255, 0.4); box-shadow: 0 0 10px rgba(0, 145, 255, 0.25); }
+.badge-s2 { background: var(--teal-soft); color: var(--teal); border-color: rgba(0, 194, 168, 0.4); box-shadow: 0 0 10px rgba(0, 194, 168, 0.25); }
+.badge-s3 { background: var(--violet-soft); color: var(--violet); border-color: rgba(160, 32, 240, 0.4); box-shadow: 0 0 10px rgba(160, 32, 240, 0.25); }
+.badge-s4 { background: var(--orange-soft); color: var(--orange); border-color: rgba(255, 106, 0, 0.4); box-shadow: 0 0 10px rgba(255, 106, 0, 0.25); }
+.badge-s5 { background: var(--pink-soft); color: var(--pink); border-color: rgba(255, 20, 147, 0.4); box-shadow: 0 0 10px rgba(255, 20, 147, 0.25); }
 
 .row-actions {
   display: flex;
@@ -645,11 +641,17 @@ tbody tr:hover {
 }
 
 .fullscreen-status {
-  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  display: inline-block;
+  font-size: clamp(1.3rem, 3.5vw, 1.9rem);
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--navy);
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1.5px solid rgba(199, 1, 13, 0.35);
+  border-radius: 14px;
+  padding: 0.5rem 1.4rem;
+  box-shadow: 0 0 16px rgba(199, 1, 13, 0.25);
 }
 
 .fullscreen-slot {

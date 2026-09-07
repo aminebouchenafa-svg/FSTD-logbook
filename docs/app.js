@@ -238,7 +238,7 @@ function renderTable() {
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
-      <td class="cell-heure">${s.heureDebut}</td>
+      <td>${s.heureDebut}</td>
       <td>${s.heureFin || '—'}</td>
       <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
       <td>${escapeHtml(s.nomTri)}</td>
@@ -595,7 +595,7 @@ function openAdminModal() {
 function renderAdminTable() {
   const body = document.getElementById('admin-body');
   if (sessions.length === 0) {
-    body.innerHTML = '<tr><td colspan="5" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="13" class="empty">Aucune séance enregistrée.</td></tr>';
     return;
   }
   body.innerHTML = sessions
@@ -603,7 +603,15 @@ function renderAdminTable() {
     <tr data-id="${s.id}">
       <td>${s.numero ?? '—'}</td>
       <td>${formatDate(s.date)}</td>
+      <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
+      <td>${s.heureDebut}</td>
+      <td>${s.heureFin || '—'}</td>
+      <td>${formatDuration(s.date, s.heureDebut, s.heureFin)}</td>
       <td>${escapeHtml(s.nomTri)}</td>
+      <td>${escapeHtml(s.nomCdb)}</td>
+      <td>${escapeHtml(s.nomFo)}</td>
+      <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
+      <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
       <td><button class="delete-btn" data-action="admin-delete" data-id="${s.id}">Suppr.</button></td>
     </tr>`)
