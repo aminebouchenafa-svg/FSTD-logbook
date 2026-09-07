@@ -266,9 +266,9 @@ function openFullscreenChrono(session) {
   document.getElementById('fullscreen-slot').innerHTML =
     `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
   document.getElementById('fullscreen-crew').innerHTML = `
-    <span class="role-tri">TRI/TRE ${escapeHtml(session.nomTri)}</span>
-    <span class="role-cdb">CDB ${escapeHtml(session.nomCdb)}</span>
-    <span class="role-fo">FO ${escapeHtml(session.nomFo)}</span>
+    <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
+    <span class="chip chip-info">CDB ${escapeHtml(session.nomCdb)}</span>
+    <span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
   tickChronos();

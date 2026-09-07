@@ -196,9 +196,9 @@ function openFullscreenChrono(session) {
   document.getElementById('fullscreen-slot').innerHTML =
     `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
   document.getElementById('fullscreen-crew').innerHTML = `
-    <span class="role-tri">TRI/TRE ${escapeHtml(session.nomTri)}</span>
-    <span class="role-cdb">CDB ${escapeHtml(session.nomCdb)}</span>
-    <span class="role-fo">FO ${escapeHtml(session.nomFo)}</span>
+    <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
+    <span class="chip chip-info">CDB ${escapeHtml(session.nomCdb)}</span>
+    <span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
   tickChronos();
@@ -436,7 +436,7 @@ function drawSessionPdf(doc, session, y0 = 20) {
 
   const rows = [
     ['Date', formatDate(session.date)],
-    ['Créneau', session.creneau],
+    ['Slot', session.creneau],
     ['Heure de début', session.heureDebut],
     ['Heure de fin', session.heureFin || '—'],
     ['Durée', formatDuration(session.date, session.heureDebut, session.heureFin)],
@@ -489,7 +489,7 @@ function sessionsTablePdf(doc, sessionsToPrint, title) {
   doc.setTextColor(100, 110, 130);
   doc.text(title, 14, 21);
 
-  const headers = ['N°', 'Date', 'Créneau', 'Début', 'Fin', 'Durée', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
+  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
   const colX = [14, 24, 42, 60, 74, 88, 100, 130, 160, 190, 210, 226];
   let y = 32;
 

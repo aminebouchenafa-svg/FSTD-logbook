@@ -98,7 +98,7 @@
                 <th><input type="checkbox" id="select-all" /></th>
                 <th>N°</th>
                 <th>Date</th>
-                <th>Créneau</th>
+                <th>Slot</th>
                 <th>Début</th>
                 <th>Fin</th>
                 <th>Durée</th>
@@ -150,13 +150,13 @@
       <h2>Démarrer une séance</h2>
       <form id="open-form">
         <div class="form-grid">
-          <label>
+          <label class="label-date">
             Date de la séance
-            <input type="date" id="open-date" required />
+            <input type="date" id="open-date" class="input-date" required />
           </label>
-          <label>
-            Créneau
-            <select id="open-creneau" required>
+          <label class="label-creneau">
+            Slot
+            <select id="open-creneau" class="input-creneau" required>
               <option value="" disabled selected>Choisir…</option>
               <option value="S1">S1 (06h00 - 10h00)</option>
               <option value="S2">S2 (10h15 - 14h15)</option>
@@ -214,9 +214,9 @@
       <p id="close-summary" class="summary"></p>
       <form id="close-form">
         <div class="form-grid">
-          <label>
+          <label class="label-heure">
             Heure de fin
-            <input type="time" id="close-heureFin" required />
+            <input type="time" id="close-heureFin" class="input-heure" required />
           </label>
           <label>
             Mot de passe (confirmation de signature)

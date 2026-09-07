@@ -52,7 +52,7 @@ async function sessionPdfBuffer(session) {
   doc.x = col1;
   doc.y = topY;
   labelValue(doc, 'Date de la séance', formatDate(session.date));
-  labelValue(doc, 'Créneau', session.creneau);
+  labelValue(doc, 'Slot', session.creneau);
   labelValue(doc, 'Heure de début', session.heureDebut);
   labelValue(doc, 'Heure de fin', session.heureFin);
   labelValue(doc, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin));
@@ -105,7 +105,7 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
     : 'Registre complet des séances';
   drawHeader(doc, title);
 
-  const headers = ['N°', 'Date', 'Créneau', 'Début', 'Fin', 'Durée', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
+  const headers = ['N°', 'Date', 'Slot', 'Début', 'Fin', 'Durée', 'TRI', 'CDB', 'FO', 'Training', 'Séance', 'Statut'];
   const widths = [30, 60, 45, 40, 40, 45, 85, 85, 85, 55, 50, 60];
   let y = doc.y;
   const startX = doc.page.margins.left;
