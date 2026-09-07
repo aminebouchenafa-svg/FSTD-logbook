@@ -53,10 +53,30 @@ function badgeHex(type) {
   return BADGE_HEX[type] || '#101828';
 }
 
-function labelValue(doc, label, value, opts = {}, color = '#101828') {
-  doc.fontSize(9).fillColor('#667085').text(label, opts);
-  doc.fontSize(12).fillColor(color).text(value || '—');
-  doc.moveDown(0.6);
+// Version très éclaircie d'une couleur, pour servir de fond de badge sobre
+// derrière un libellé (même logique que les "chips" à l'écran).
+function lightenHex(hex, factor = 0.85) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  const round = (c) => Math.round(c + (255 - c) * factor);
+  return `#${[round(r), round(g), round(b)].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
+// Dessine un champ : le libellé dans un badge coloré (fond teinté, texte de
+// la même couleur) et la valeur en noir juste en dessous, dans une police
+// plus grande. Retourne le y de départ de la ligne suivante.
+function drawField(doc, x, y, label, value, color) {
+  doc.fontSize(9.5);
+  if (color) {
+    const padX = 4;
+    const w = doc.widthOfString(label) + padX * 2;
+    doc.roundedRect(x, y, w, 14, 3).fill(lightenHex(color));
+    doc.fillColor(color).text(label, x + padX, y + 3, { lineBreak: false });
+  } else {
+    doc.fillColor('#667085').text(label, x, y, { lineBreak: false });
+  }
+  doc.fontSize(13).fillColor('#101828').text(value || '—', x, y + 17, { lineBreak: false });
+  return y + 42;
 }
 
 async function sessionPdfBuffer(session) {
@@ -69,40 +89,37 @@ async function sessionPdfBuffer(session) {
   const col2 = doc.page.width / 2;
   const topY = doc.y;
 
+  let y1 = topY;
+  y1 = drawField(doc, col1, y1, 'Date de la séance', formatDate(session.date), null);
+  y1 = drawField(doc, col1, y1, 'Slot', session.creneau, badgeHex(session.creneau));
+  y1 = drawField(doc, col1, y1, 'Heure de début', session.heureDebut, '#37495f');
+  y1 = drawField(doc, col1, y1, 'Heure de fin', session.heureFin, session.heureFin ? '#ffab00' : null);
+  y1 = drawField(doc, col1, y1, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin), null);
+
+  let y2 = topY;
+  y2 = drawField(doc, col2, y2, 'Qualification de Type', session.typeTraining, badgeHex(session.typeTraining));
+  y2 = drawField(doc, col2, y2, 'Type de simulation', session.typeSeance, badgeHex(session.typeSeance));
+  y2 = drawField(doc, col2, y2, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status));
+
+  let y3 = Math.max(y1, y2) + 10;
+  y3 = drawField(doc, col1, y3, 'TRI/TRE (instructeur)', session.nomTri, '#a020f0');
+  y3 = drawField(doc, col1, y3, 'CPT', session.nomCdb, '#0091ff');
+  y3 = drawField(doc, col1, y3, 'FO', session.nomFo, '#00c2a8');
+
   doc.x = col1;
-  doc.y = topY;
-  labelValue(doc, 'Date de la séance', formatDate(session.date));
-  labelValue(doc, 'Slot', session.creneau, {}, badgeHex(session.creneau));
-  labelValue(doc, 'Heure de début', session.heureDebut, {}, '#37495f');
-  labelValue(doc, 'Heure de fin', session.heureFin, {}, session.heureFin ? '#ffab00' : '#101828');
-  labelValue(doc, 'Durée', formatDuration(session.date, session.heureDebut, session.heureFin));
-
-  doc.x = col2;
-  doc.y = topY;
-  labelValue(doc, 'Qualification de Type', session.typeTraining, {}, badgeHex(session.typeTraining));
-  labelValue(doc, 'Type de simulation', session.typeSeance, {}, badgeHex(session.typeSeance));
-  labelValue(doc, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', {}, badgeHex(session.status));
-
-  doc.x = col1;
-  doc.y = Math.max(doc.y, topY + 5 * 40) + 10;
-
-  labelValue(doc, 'TRI/TRE (instructeur)', session.nomTri, {}, '#a020f0');
-  labelValue(doc, 'CPT', session.nomCdb, {}, '#0091ff');
-  labelValue(doc, 'FO', session.nomFo, {}, '#00c2a8');
-
-  doc.moveDown(0.5);
-  doc.fontSize(9).fillColor('#667085').text('Remarques');
+  doc.y = y3 + 6;
+  doc.fontSize(9.5).fillColor('#667085').text('Remarques');
   doc.fontSize(11).fillColor('#101828').text(session.remarques || '—', { width: doc.page.width - 100 });
   doc.moveDown(1);
 
-  doc.fontSize(9).fillColor('#667085').text(
+  doc.fontSize(9.5).fillColor('#667085').text(
     `Ouverte par ${session.openedByName || '—'}` +
     (session.closedByName ? ` · Clôturée par ${session.closedByName}` : '')
   );
 
   if (session.signature) {
     doc.moveDown(1);
-    doc.fontSize(9).fillColor('#667085').text('Signature électronique');
+    doc.fontSize(9.5).fillColor('#667085').text('Signature électronique');
     try {
       const base64 = session.signature.split(',')[1];
       const imgBuffer = Buffer.from(base64, 'base64');

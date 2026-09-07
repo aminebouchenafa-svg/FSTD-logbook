@@ -448,20 +448,37 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function setPdfColor(doc, hex, fallback = [20, 24, 40]) {
-  doc.setTextColor(...(hex ? hexToRgb(hex) : fallback));
+// Version très éclaircie d'une couleur, pour servir de fond de badge sobre
+// derrière un libellé (même logique que les "chips" à l'écran).
+function lightenHex(hex, factor = 0.85) {
+  const [r, g, b] = hexToRgb(hex);
+  return [r + (255 - r) * factor, g + (255 - g) * factor, b + (255 - b) * factor];
+}
+
+// Dessine le libellé d'un champ dans un badge coloré (fond teinté + texte de
+// la même couleur), comme les cases colorées de l'application. Les valeurs
+// des champs restent en noir : seuls les titres portent la couleur.
+function drawLabelBadge(doc, label, x, y, hex) {
+  doc.setFontSize(9.5);
+  const padX = 2.4;
+  const w = doc.getTextWidth(label) + padX * 2;
+  const h = 6.4;
+  doc.setFillColor(...lightenHex(hex));
+  doc.roundedRect(x, y - h + 2, w, h, 1.2, 1.2, 'F');
+  doc.setTextColor(...hexToRgb(hex));
+  doc.text(label, x + padX, y);
 }
 
 function drawSessionPdf(doc, session, y0 = 20) {
-  doc.setFontSize(16);
+  doc.setFontSize(17);
   doc.setTextColor(20, 24, 40);
   doc.text('FSTD Logbook 737 NG', 14, y0);
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setTextColor(100, 110, 130);
-  doc.text('Registre des séances simulateur', 14, y0 + 6);
-  doc.setFontSize(13);
+  doc.text('Registre des séances simulateur', 14, y0 + 7);
+  doc.setFontSize(14);
   doc.setTextColor(20, 24, 40);
-  doc.text(`Fiche de séance n° ${session.numero}`, 14, y0 + 16);
+  doc.text(`Fiche de séance n° ${session.numero}`, 14, y0 + 18);
 
   const rows = [
     ['Date', formatDate(session.date), null],
@@ -477,25 +494,33 @@ function drawSessionPdf(doc, session, y0 = 20) {
     ['FO', session.nomFo, '#00c2a8'],
   ];
 
-  let y = y0 + 26;
-  doc.setFontSize(10);
+  let y = y0 + 31;
   rows.forEach(([label, value, color]) => {
-    doc.setTextColor(100, 110, 130);
-    doc.text(`${label}`, 14, y);
-    setPdfColor(doc, color);
-    doc.text(String(value ?? '—'), 60, y);
-    y += 7;
+    if (color) {
+      drawLabelBadge(doc, label, 14, y, color);
+    } else {
+      doc.setFontSize(9.5);
+      doc.setTextColor(100, 110, 130);
+      doc.text(label, 14, y);
+    }
+    doc.setFontSize(12.5);
+    doc.setTextColor(20, 24, 40);
+    doc.text(String(value ?? '—'), 78, y);
+    y += 9;
   });
 
   y += 2;
+  doc.setFontSize(9.5);
   doc.setTextColor(100, 110, 130);
   doc.text('Remarques', 14, y);
-  y += 6;
+  y += 7;
+  doc.setFontSize(11);
   doc.setTextColor(20, 24, 40);
   doc.text(doc.splitTextToSize(session.remarques || '—', 180), 14, y);
-  y += 14;
+  y += 15;
 
   if (session.signature) {
+    doc.setFontSize(9.5);
     doc.setTextColor(100, 110, 130);
     doc.text('Signature électronique', 14, y);
     y += 4;
