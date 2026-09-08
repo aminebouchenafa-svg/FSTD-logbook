@@ -345,6 +345,15 @@ button.btn-loading::after {
   text-align: center;
 }
 
+.auth-footer {
+  margin: 1.5rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  line-height: 1.5;
+}
+
 .error {
   color: var(--danger);
   min-height: 1.2rem;
