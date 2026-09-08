@@ -227,26 +227,56 @@
             Heure de début
             <input type="time" id="open-heureDebut" class="input-heure" required />
           </label>
-          <label class="label-tri">
-            Nom du TRI/TRE
-            <input type="text" id="open-nomTri" class="input-tri" autocomplete="off" required />
-          </label>
-          <label class="label-cdb">
-            Nom du Commandant (CPT)
-            <input type="text" id="open-nomCdb" class="input-cdb" autocomplete="off" />
-          </label>
-          <label class="label-cdb">
-            CPT 2 (optionnel)
-            <input type="text" id="open-nomCdb2" class="input-cdb" autocomplete="off" />
-          </label>
-          <label class="label-fo">
-            Nom du Copilote (FO)
-            <input type="text" id="open-nomFo" class="input-fo" autocomplete="off" />
-          </label>
-          <label class="label-fo">
-            FO 2 (optionnel)
-            <input type="text" id="open-nomFo2" class="input-fo" autocomplete="off" />
-          </label>
+          <div class="crew-pair">
+            <label class="label-tri label-name">
+              Nom &amp; Prénom du TRI/TRE
+              <input type="text" id="open-nomTri" class="input-tri" autocomplete="off" required />
+            </label>
+            <label class="label-tri label-matricule">
+              Matricule
+              <input type="text" id="open-matriculeTri" class="input-tri" autocomplete="off" />
+            </label>
+          </div>
+          <div class="crew-pair">
+            <label class="label-cdb label-name">
+              Nom &amp; Prénom du Commandant (CPT)
+              <input type="text" id="open-nomCdb" class="input-cdb" autocomplete="off" />
+            </label>
+            <label class="label-cdb label-matricule">
+              Matricule
+              <input type="text" id="open-matriculeCdb" class="input-cdb" autocomplete="off" />
+            </label>
+          </div>
+          <div class="crew-pair">
+            <label class="label-cdb label-name">
+              Nom &amp; Prénom CPT 2 (optionnel)
+              <input type="text" id="open-nomCdb2" class="input-cdb" autocomplete="off" />
+            </label>
+            <label class="label-cdb label-matricule">
+              Matricule
+              <input type="text" id="open-matriculeCdb2" class="input-cdb" autocomplete="off" />
+            </label>
+          </div>
+          <div class="crew-pair">
+            <label class="label-fo label-name">
+              Nom &amp; Prénom du Copilote (FO)
+              <input type="text" id="open-nomFo" class="input-fo" autocomplete="off" />
+            </label>
+            <label class="label-fo label-matricule">
+              Matricule
+              <input type="text" id="open-matriculeFo" class="input-fo" autocomplete="off" />
+            </label>
+          </div>
+          <div class="crew-pair">
+            <label class="label-fo label-name">
+              Nom &amp; Prénom FO 2 (optionnel)
+              <input type="text" id="open-nomFo2" class="input-fo" autocomplete="off" />
+            </label>
+            <label class="label-fo label-matricule">
+              Matricule
+              <input type="text" id="open-matriculeFo2" class="input-fo" autocomplete="off" />
+            </label>
+          </div>
           <label class="label-training">
             Qualification de Type (Type Rating)
             <select id="open-typeTraining" class="input-training" required>

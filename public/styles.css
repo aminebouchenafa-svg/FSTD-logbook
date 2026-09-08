@@ -599,6 +599,13 @@ tbody tr:hover {
   white-space: nowrap;
 }
 
+.matricule {
+  font-weight: 500;
+  opacity: 0.7;
+  font-size: 0.85em;
+  margin-left: 0.15em;
+}
+
 .chip-navy { background: var(--navy-soft); border-color: rgba(55, 73, 95, 0.35); }
 .chip-violet { background: var(--violet-soft); border-color: rgba(160, 32, 240, 0.35); }
 .chip-info { background: var(--info-soft); border-color: rgba(0, 145, 255, 0.35); }
@@ -686,6 +693,22 @@ tbody tr:hover {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.crew-pair {
+  display: flex;
+  gap: 0.5rem;
+  grid-column: span 2;
+  min-width: 260px;
+}
+
+.crew-pair .label-name {
+  flex: 2;
+}
+
+.crew-pair .label-matricule {
+  flex: 1;
+  min-width: 90px;
 }
 
 .full-width {
@@ -805,6 +828,12 @@ tbody tr:hover {
 
 .fullscreen-slot {
   margin-top: 0.25rem;
+}
+
+.fullscreen-slot .badge-lg {
+  font-size: 2.2rem;
+  padding: 0.75rem 2rem;
+  border-radius: 14px;
 }
 
 .fullscreen-crew {

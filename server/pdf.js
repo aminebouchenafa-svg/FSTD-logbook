@@ -102,6 +102,11 @@ function badgeHex(type) {
   return BADGE_HEX[type] || '#101828';
 }
 
+// Nom + matricule entre parenthèses, pour les champs affichant un membre d'équipage.
+function nameMat(nom, matricule) {
+  return matricule ? `${nom} (${matricule})` : nom;
+}
+
 // Version très éclaircie d'une couleur, pour servir de fond de badge sobre
 // derrière un libellé (même logique que les "chips" à l'écran).
 function lightenHex(hex, factor = 0.85) {
@@ -151,11 +156,11 @@ async function sessionPdfBuffer(session) {
   y2 = drawField(doc, col2, y2, 'Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status));
 
   let y3 = Math.max(y1, y2) + 10;
-  y3 = drawField(doc, col1, y3, 'TRI/TRE (instructeur)', session.nomTri, '#a020f0');
-  if (session.nomCdb) y3 = drawField(doc, col1, y3, 'CPT', session.nomCdb, '#0091ff');
-  if (session.nomCdb2) y3 = drawField(doc, col1, y3, 'CPT 2', session.nomCdb2, '#0091ff');
-  if (session.nomFo) y3 = drawField(doc, col1, y3, 'FO', session.nomFo, '#0d9488');
-  if (session.nomFo2) y3 = drawField(doc, col1, y3, 'FO 2', session.nomFo2, '#0d9488');
+  y3 = drawField(doc, col1, y3, 'TRI/TRE (instructeur)', nameMat(session.nomTri, session.matriculeTri), '#a020f0');
+  if (session.nomCdb) y3 = drawField(doc, col1, y3, 'CPT', nameMat(session.nomCdb, session.matriculeCdb), '#0091ff');
+  if (session.nomCdb2) y3 = drawField(doc, col1, y3, 'CPT 2', nameMat(session.nomCdb2, session.matriculeCdb2), '#0091ff');
+  if (session.nomFo) y3 = drawField(doc, col1, y3, 'FO', nameMat(session.nomFo, session.matriculeFo), '#0d9488');
+  if (session.nomFo2) y3 = drawField(doc, col1, y3, 'FO 2', nameMat(session.nomFo2, session.matriculeFo2), '#0d9488');
 
   doc.x = col1;
   doc.y = y3 + 6;

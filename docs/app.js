@@ -99,13 +99,25 @@ function uuid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+// Affiche un nom avec son matricule entre parenthèses s'il est renseigné.
+function crewNameHtml(nom, matricule) {
+  if (!nom) return '';
+  return matricule ? `${escapeHtml(nom)} <span class="matricule">(${escapeHtml(matricule)})</span>` : escapeHtml(nom);
+}
+
 // Construit la ligne d'équipage en ignorant les rôles vides (une séance peut
 // n'avoir que des CPT, ou que des FO).
 function crewLine(s) {
-  const parts = [`TRI ${escapeHtml(s.nomTri)}`];
-  const cpts = [s.nomCdb, s.nomCdb2].filter(Boolean).map(escapeHtml).join(' / ');
+  const parts = [`TRI ${crewNameHtml(s.nomTri, s.matriculeTri)}`];
+  const cpts = [
+    s.nomCdb ? crewNameHtml(s.nomCdb, s.matriculeCdb) : '',
+    s.nomCdb2 ? crewNameHtml(s.nomCdb2, s.matriculeCdb2) : '',
+  ].filter(Boolean).join(' / ');
   if (cpts) parts.push(`CPT ${cpts}`);
-  const fos = [s.nomFo, s.nomFo2].filter(Boolean).map(escapeHtml).join(' / ');
+  const fos = [
+    s.nomFo ? crewNameHtml(s.nomFo, s.matriculeFo) : '',
+    s.nomFo2 ? crewNameHtml(s.nomFo2, s.matriculeFo2) : '',
+  ].filter(Boolean).join(' / ');
   if (fos) parts.push(`FO ${fos}`);
   return parts.join(' · ');
 }
@@ -208,11 +220,11 @@ function openFullscreenChrono(session) {
   document.getElementById('fullscreen-slot').innerHTML =
     `<span class="badge badge-lg ${badgeClass(session.creneau)}">${session.creneau}</span>`;
   document.getElementById('fullscreen-crew').innerHTML = `
-    <span class="chip chip-violet">TRI/TRE ${escapeHtml(session.nomTri)}</span>
-    ${session.nomCdb ? `<span class="chip chip-info">CPT ${escapeHtml(session.nomCdb)}</span>` : ''}
-    ${session.nomCdb2 ? `<span class="chip chip-info">CPT 2 ${escapeHtml(session.nomCdb2)}</span>` : ''}
-    ${session.nomFo ? `<span class="chip chip-teal">FO ${escapeHtml(session.nomFo)}</span>` : ''}
-    ${session.nomFo2 ? `<span class="chip chip-teal">FO 2 ${escapeHtml(session.nomFo2)}</span>` : ''}
+    <span class="chip chip-violet">TRI/TRE ${crewNameHtml(session.nomTri, session.matriculeTri)}</span>
+    ${session.nomCdb ? `<span class="chip chip-info">CPT ${crewNameHtml(session.nomCdb, session.matriculeCdb)}</span>` : ''}
+    ${session.nomCdb2 ? `<span class="chip chip-info">CPT 2 ${crewNameHtml(session.nomCdb2, session.matriculeCdb2)}</span>` : ''}
+    ${session.nomFo ? `<span class="chip chip-teal">FO ${crewNameHtml(session.nomFo, session.matriculeFo)}</span>` : ''}
+    ${session.nomFo2 ? `<span class="chip chip-teal">FO 2 ${crewNameHtml(session.nomFo2, session.matriculeFo2)}</span>` : ''}
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
   tickChronos();
@@ -227,7 +239,10 @@ function renderTable() {
   const query = document.getElementById('search').value.trim().toLowerCase();
   const filtered = query
     ? sessions.filter((s) =>
-        [s.nomTri, s.nomCdb, s.nomCdb2, s.nomFo, s.nomFo2, s.date, s.creneau, s.typeTraining, s.typeSeance]
+        [
+          s.nomTri, s.matriculeTri, s.nomCdb, s.matriculeCdb, s.nomCdb2, s.matriculeCdb2,
+          s.nomFo, s.matriculeFo, s.nomFo2, s.matriculeFo2, s.date, s.creneau, s.typeTraining, s.typeSeance,
+        ]
           .join(' ')
           .toLowerCase()
           .includes(query)
@@ -255,11 +270,11 @@ function renderTable() {
       <td><span class="chip chip-navy">${s.heureDebut}</span></td>
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
-      <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
-      <td>${s.nomCdb ? `<span class="chip chip-info">${escapeHtml(s.nomCdb)}</span>` : '—'}</td>
-      <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
-      <td>${s.nomFo ? `<span class="chip chip-teal">${escapeHtml(s.nomFo)}</span>` : '—'}</td>
-      <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
+      <td><span class="chip chip-violet">${crewNameHtml(s.nomTri, s.matriculeTri)}</span></td>
+      <td>${s.nomCdb ? `<span class="chip chip-info">${crewNameHtml(s.nomCdb, s.matriculeCdb)}</span>` : '—'}</td>
+      <td>${s.nomCdb2 ? `<span class="chip chip-info">${crewNameHtml(s.nomCdb2, s.matriculeCdb2)}</span>` : '—'}</td>
+      <td>${s.nomFo ? `<span class="chip chip-teal">${crewNameHtml(s.nomFo, s.matriculeFo)}</span>` : '—'}</td>
+      <td>${s.nomFo2 ? `<span class="chip chip-teal">${crewNameHtml(s.nomFo2, s.matriculeFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
@@ -296,10 +311,15 @@ function openOpenModal() {
   document.getElementById('open-creneau').value = '';
   document.getElementById('open-heureDebut').value = nowHm();
   document.getElementById('open-nomTri').value = '';
+  document.getElementById('open-matriculeTri').value = '';
   document.getElementById('open-nomCdb').value = '';
+  document.getElementById('open-matriculeCdb').value = '';
   document.getElementById('open-nomCdb2').value = '';
+  document.getElementById('open-matriculeCdb2').value = '';
   document.getElementById('open-nomFo').value = '';
+  document.getElementById('open-matriculeFo').value = '';
   document.getElementById('open-nomFo2').value = '';
+  document.getElementById('open-matriculeFo2').value = '';
   document.getElementById('open-typeTraining').value = '';
   document.getElementById('open-typeSeance').value = '';
   document.getElementById('open-error').textContent = '';
@@ -327,6 +347,11 @@ async function handleOpenSubmit(e) {
   payload.nomCdb2 = document.getElementById('open-nomCdb2').value.trim();
   payload.nomFo = document.getElementById('open-nomFo').value.trim();
   payload.nomFo2 = document.getElementById('open-nomFo2').value.trim();
+  payload.matriculeTri = document.getElementById('open-matriculeTri').value.trim();
+  payload.matriculeCdb = document.getElementById('open-matriculeCdb').value.trim();
+  payload.matriculeCdb2 = document.getElementById('open-matriculeCdb2').value.trim();
+  payload.matriculeFo = document.getElementById('open-matriculeFo').value.trim();
+  payload.matriculeFo2 = document.getElementById('open-matriculeFo2').value.trim();
 
   if (!payload.nomCdb && !payload.nomCdb2 && !payload.nomFo && !payload.nomFo2) {
     document.getElementById('open-error').textContent = "Merci de renseigner au moins un membre d'équipage (CPT ou FO).";
@@ -407,10 +432,11 @@ function clearSignatureCanvas() {
 
 function openCloseModal(session) {
   closingSessionId = session.id;
-  const summaryParts = [formatDate(session.date), session.creneau, `TRI ${session.nomTri}`];
-  const cpts = [session.nomCdb, session.nomCdb2].filter(Boolean).join(' / ');
+  const nameMat = (nom, mat) => (nom ? (mat ? `${nom} (${mat})` : nom) : '');
+  const summaryParts = [formatDate(session.date), session.creneau, `TRI ${nameMat(session.nomTri, session.matriculeTri)}`];
+  const cpts = [nameMat(session.nomCdb, session.matriculeCdb), nameMat(session.nomCdb2, session.matriculeCdb2)].filter(Boolean).join(' / ');
   if (cpts) summaryParts.push(`CPT ${cpts}`);
-  const fos = [session.nomFo, session.nomFo2].filter(Boolean).join(' / ');
+  const fos = [nameMat(session.nomFo, session.matriculeFo), nameMat(session.nomFo2, session.matriculeFo2)].filter(Boolean).join(' / ');
   if (fos) summaryParts.push(`FO ${fos}`);
   summaryParts.push(`${session.typeTraining}/${session.typeSeance}`);
   document.getElementById('close-summary').textContent = summaryParts.join(' · ');
@@ -459,6 +485,11 @@ async function handleCloseSubmit(e) {
 // ---------- PDF (jsPDF, généré dans le navigateur) ----------
 
 const { jsPDF } = window.jspdf;
+
+// Nom + matricule entre parenthèses, pour les PDF (texte brut, pas de HTML).
+function pdfNameMat(nom, matricule) {
+  return matricule ? `${nom} (${matricule})` : nom;
+}
 
 // Mêmes couleurs que les badges à l'écran, pour que le PDF archivé reste
 // cohérent avec l'application (QT rouge, REC bleu électrique, etc.).
@@ -591,12 +622,12 @@ function drawSessionPdf(doc, session) {
     ['Qualification de Type', session.typeTraining, badgeHex(session.typeTraining)],
     ['Type de simulation', session.typeSeance, badgeHex(session.typeSeance)],
     ['Statut', session.status === 'cloturee' ? 'Clôturée' : 'Ouverte', badgeHex(session.status)],
-    ['TRI/TRE', session.nomTri, '#a020f0'],
+    ['TRI/TRE', pdfNameMat(session.nomTri, session.matriculeTri), '#a020f0'],
   ];
-  if (session.nomCdb) rows.push(['CPT', session.nomCdb, '#0091ff']);
-  if (session.nomCdb2) rows.push(['CPT 2', session.nomCdb2, '#0091ff']);
-  if (session.nomFo) rows.push(['FO', session.nomFo, '#0d9488']);
-  if (session.nomFo2) rows.push(['FO 2', session.nomFo2, '#0d9488']);
+  if (session.nomCdb) rows.push(['CPT', pdfNameMat(session.nomCdb, session.matriculeCdb), '#0091ff']);
+  if (session.nomCdb2) rows.push(['CPT 2', pdfNameMat(session.nomCdb2, session.matriculeCdb2), '#0091ff']);
+  if (session.nomFo) rows.push(['FO', pdfNameMat(session.nomFo, session.matriculeFo), '#0d9488']);
+  if (session.nomFo2) rows.push(['FO 2', pdfNameMat(session.nomFo2, session.matriculeFo2), '#0d9488']);
 
   let y = y0 + 13;
   rows.forEach(([label, value, color]) => {
@@ -808,11 +839,11 @@ function renderAdminTable() {
       <td><span class="chip chip-navy">${s.heureDebut}</span></td>
       <td>${s.heureFin ? `<span class="chip chip-navy">${s.heureFin}</span>` : '—'}</td>
       <td><span class="chip chip-yellow">${formatDuration(s.date, s.heureDebut, s.heureFin)}</span></td>
-      <td><span class="chip chip-violet">${escapeHtml(s.nomTri)}</span></td>
-      <td>${s.nomCdb ? `<span class="chip chip-info">${escapeHtml(s.nomCdb)}</span>` : '—'}</td>
-      <td>${s.nomCdb2 ? `<span class="chip chip-info">${escapeHtml(s.nomCdb2)}</span>` : '—'}</td>
-      <td>${s.nomFo ? `<span class="chip chip-teal">${escapeHtml(s.nomFo)}</span>` : '—'}</td>
-      <td>${s.nomFo2 ? `<span class="chip chip-teal">${escapeHtml(s.nomFo2)}</span>` : '—'}</td>
+      <td><span class="chip chip-violet">${crewNameHtml(s.nomTri, s.matriculeTri)}</span></td>
+      <td>${s.nomCdb ? `<span class="chip chip-info">${crewNameHtml(s.nomCdb, s.matriculeCdb)}</span>` : '—'}</td>
+      <td>${s.nomCdb2 ? `<span class="chip chip-info">${crewNameHtml(s.nomCdb2, s.matriculeCdb2)}</span>` : '—'}</td>
+      <td>${s.nomFo ? `<span class="chip chip-teal">${crewNameHtml(s.nomFo, s.matriculeFo)}</span>` : '—'}</td>
+      <td>${s.nomFo2 ? `<span class="chip chip-teal">${crewNameHtml(s.nomFo2, s.matriculeFo2)}</span>` : '—'}</td>
       <td><span class="badge badge-lg ${badgeClass(s.typeTraining)}">${s.typeTraining}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.status)}">${s.status === 'cloturee' ? 'Clôturée' : 'Ouverte'}</span></td>
