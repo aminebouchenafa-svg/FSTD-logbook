@@ -451,6 +451,7 @@ main {
 .selection-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   background: var(--accent-soft);
   color: var(--accent-hover);

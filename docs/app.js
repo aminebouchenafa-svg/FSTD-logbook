@@ -13,6 +13,7 @@ const DB_VERSION = 1;
 let sessions = [];
 let selectedIds = new Set();
 let currentFilteredIds = [];
+let adminSelectedIds = new Set();
 let closingSessionId = null;
 let fullscreenSessionId = null;
 let hasSignature = false;
@@ -344,7 +345,13 @@ async function handleOpenSubmit(e) {
     closedAt: null,
   };
 
-  await putSession(session);
+  try {
+    await putSession(session);
+  } catch (err) {
+    const reason = err && err.message ? err.message : 'erreur inconnue';
+    document.getElementById('open-error').textContent = `Impossible d'enregistrer la séance sur cet appareil (${reason}).`;
+    return;
+  }
   document.getElementById('open-modal').hidden = true;
   await renderAll();
   openFullscreenChrono(session);
@@ -718,6 +725,31 @@ async function handleShareSelection() {
   await shareOrDownloadPdfDoc(doc, 'seances-selection.pdf', 'Séances sélectionnées');
 }
 
+// Supprime les séances sélectionnées qui ne sont pas clôturées ; celles déjà
+// clôturées et signées doivent passer par l'administration (code requis).
+async function handleDeleteSelection() {
+  if (selectedIds.size === 0) return;
+  const chosen = sessions.filter((s) => selectedIds.has(s.id));
+  const deletable = chosen.filter((s) => s.status !== 'cloturee');
+  const blocked = chosen.length - deletable.length;
+
+  if (deletable.length === 0) {
+    alert('Ces séances sont clôturées et signées : elles ne peuvent être supprimées que depuis l\'administration (code requis).');
+    return;
+  }
+
+  const message = blocked > 0
+    ? `Supprimer définitivement ${deletable.length} séance(s) ? ${blocked} séance(s) clôturée(s) de la sélection seront conservées (utilisez l'administration pour les supprimer).`
+    : `Supprimer définitivement ${deletable.length} séance(s) ?`;
+  if (!confirm(message)) return;
+
+  for (const s of deletable) {
+    await deleteSessionLocal(s.id);
+    selectedIds.delete(s.id);
+  }
+  await renderAll();
+}
+
 async function handleExportPdf() {
   const from = document.getElementById('export-from').value;
   const to = document.getElementById('export-to').value;
@@ -752,17 +784,24 @@ function openAdminModal() {
   document.getElementById('admin-lock').hidden = false;
   document.getElementById('admin-panel').hidden = true;
   document.getElementById('admin-modal').hidden = false;
+  adminSelectedIds.clear();
 }
 
 function renderAdminTable() {
   const body = document.getElementById('admin-body');
+
+  const validIds = new Set(sessions.map((s) => s.id));
+  adminSelectedIds.forEach((id) => { if (!validIds.has(id)) adminSelectedIds.delete(id); });
+
   if (sessions.length === 0) {
-    body.innerHTML = '<tr><td colspan="15" class="empty">Aucune séance enregistrée.</td></tr>';
+    body.innerHTML = '<tr><td colspan="16" class="empty">Aucune séance enregistrée.</td></tr>';
+    updateAdminSelectionUi();
     return;
   }
   body.innerHTML = sessions
     .map((s) => `
     <tr data-id="${s.id}">
+      <td><input type="checkbox" class="admin-row-select" data-id="${s.id}" ${adminSelectedIds.has(s.id) ? 'checked' : ''}></td>
       <td>${s.numero ?? '—'}</td>
       <td><span class="chip chip-red">${formatDate(s.date)}</span></td>
       <td><span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span></td>
@@ -780,6 +819,19 @@ function renderAdminTable() {
       <td><button class="delete-btn" data-action="admin-delete" data-id="${s.id}">Suppr.</button></td>
     </tr>`)
     .join('');
+  updateAdminSelectionUi();
+}
+
+function updateAdminSelectionUi() {
+  const count = document.getElementById('admin-selection-count');
+  const btn = document.getElementById('admin-delete-selection-btn');
+  const selectAll = document.getElementById('admin-select-all');
+  count.textContent = adminSelectedIds.size > 0 ? `${adminSelectedIds.size} séance(s) sélectionnée(s)` : '';
+  btn.hidden = adminSelectedIds.size === 0;
+  const ids = sessions.map((s) => s.id);
+  const selectedInView = ids.filter((id) => adminSelectedIds.has(id));
+  selectAll.checked = ids.length > 0 && selectedInView.length === ids.length;
+  selectAll.indeterminate = selectedInView.length > 0 && selectedInView.length < ids.length;
 }
 
 async function handleAdminDelete(id) {
@@ -787,6 +839,17 @@ async function handleAdminDelete(id) {
   const label = session ? `N° ${session.numero ?? '—'} (${formatDate(session.date)}, TRI ${session.nomTri})` : 'cette séance';
   if (!confirm(`Supprimer définitivement ${label} ? Cette action est irréversible, y compris pour une séance clôturée et signée.`)) return;
   await deleteSessionLocal(id);
+  await renderAll();
+  renderAdminTable();
+}
+
+async function handleAdminBulkDelete() {
+  if (adminSelectedIds.size === 0) return;
+  if (!confirm(`Supprimer définitivement ${adminSelectedIds.size} séance(s) ? Cette action est irréversible, y compris pour des séances clôturées et signées.`)) return;
+  for (const id of adminSelectedIds) {
+    await deleteSessionLocal(id);
+  }
+  adminSelectedIds.clear();
   await renderAll();
   renderAdminTable();
 }
@@ -888,6 +951,7 @@ function bindEvents() {
   });
 
   document.getElementById('share-selection-btn').addEventListener('click', handleShareSelection);
+  document.getElementById('delete-selection-btn').addEventListener('click', handleDeleteSelection);
   document.getElementById('search').addEventListener('input', () => renderAll());
   document.getElementById('export-pdf-btn').addEventListener('click', handleExportPdf);
 
@@ -906,6 +970,20 @@ function bindEvents() {
     const btn = e.target.closest('button[data-action="admin-delete"]');
     if (btn) handleAdminDelete(btn.dataset.id);
   });
+  document.getElementById('admin-body').addEventListener('change', (e) => {
+    const checkbox = e.target.closest('.admin-row-select');
+    if (!checkbox) return;
+    if (checkbox.checked) adminSelectedIds.add(checkbox.dataset.id);
+    else adminSelectedIds.delete(checkbox.dataset.id);
+    updateAdminSelectionUi();
+  });
+  document.getElementById('admin-select-all').addEventListener('change', (e) => {
+    const ids = sessions.map((s) => s.id);
+    if (e.target.checked) ids.forEach((id) => adminSelectedIds.add(id));
+    else ids.forEach((id) => adminSelectedIds.delete(id));
+    renderAdminTable();
+  });
+  document.getElementById('admin-delete-selection-btn').addEventListener('click', handleAdminBulkDelete);
 
   setInterval(tickChronos, 1000);
 }

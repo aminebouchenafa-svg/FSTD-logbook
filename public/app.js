@@ -433,8 +433,14 @@ async function handleOpenSubmit(e) {
     createdAt: new Date().toISOString(),
   };
 
-  await db.putSession(localSession);
-  await db.queueAction({ type: 'create', targetId: payload.id, payload, token: auth.token });
+  try {
+    await db.putSession(localSession);
+    await db.queueAction({ type: 'create', targetId: payload.id, payload, token: auth.token });
+  } catch (err) {
+    const reason = err && err.message ? err.message : 'erreur inconnue';
+    document.getElementById('open-error').textContent = `Impossible d'enregistrer la séance sur cet appareil (${reason}).`;
+    return;
+  }
   document.getElementById('open-modal').hidden = true;
   await syncAndRender();
   openFullscreenChrono(localSession);
@@ -669,6 +675,38 @@ async function deleteSession(id) {
   }
 }
 
+// Supprime les séances sélectionnées qui ne sont pas clôturées ; celles déjà
+// clôturées et signées ne peuvent pas être supprimées.
+async function handleDeleteSelection() {
+  if (selectedIds.size === 0) return;
+  const chosen = sessions.filter((s) => selectedIds.has(s.id));
+  const deletable = chosen.filter((s) => s.status !== 'cloturee');
+  const blocked = chosen.length - deletable.length;
+
+  if (deletable.length === 0) {
+    alert('Ces séances sont clôturées et signées : elles ne peuvent plus être supprimées.');
+    return;
+  }
+  if (!navigator.onLine) {
+    alert('Suppression impossible hors connexion.');
+    return;
+  }
+
+  const message = blocked > 0
+    ? `Supprimer définitivement ${deletable.length} séance(s) ? ${blocked} séance(s) clôturée(s) de la sélection ne peuvent pas être supprimées.`
+    : `Supprimer définitivement ${deletable.length} séance(s) ?`;
+  if (!confirm(message)) return;
+
+  for (const s of deletable) {
+    const res = await apiFetch(`/api/sessions/${s.id}`, { method: 'DELETE' });
+    if (res.ok || res.status === 404) {
+      await db.deleteSessionLocal(s.id);
+      selectedIds.delete(s.id);
+    }
+  }
+  await renderAll();
+}
+
 // ---------- Init ----------
 
 function bindEvents() {
@@ -771,6 +809,7 @@ function bindEvents() {
   });
 
   document.getElementById('share-selection-btn').addEventListener('click', handleShareSelection);
+  document.getElementById('delete-selection-btn').addEventListener('click', handleDeleteSelection);
 
   document.getElementById('search').addEventListener('input', () => renderAll());
 

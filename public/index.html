@@ -91,6 +91,7 @@
         <div id="selection-bar" class="selection-bar" hidden>
           <span id="selection-count"></span>
           <button type="button" id="share-selection-btn" class="secondary small">Partager la sélection (PDF)</button>
+          <button type="button" id="delete-selection-btn" class="delete-btn small">Supprimer la sélection</button>
           <button type="button" id="clear-selection-btn" class="secondary small">Annuler</button>
         </div>
         <div class="table-scroll">
@@ -152,7 +153,7 @@
   <div id="open-modal" class="modal-overlay" hidden>
     <div class="modal">
       <h2>Démarrer une séance</h2>
-      <form id="open-form">
+      <form id="open-form" novalidate>
         <div class="form-grid">
           <label class="label-date">
             Date de la séance
@@ -224,7 +225,7 @@
     <div class="modal modal-wide">
       <h2>Clôturer la séance</h2>
       <p id="close-summary" class="summary"></p>
-      <form id="close-form">
+      <form id="close-form" novalidate>
         <div class="form-grid">
           <label class="label-heurefin">
             Heure de fin
