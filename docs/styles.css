@@ -49,7 +49,6 @@
   /* Fonds pastel clairs des cartes de section, pour les distinguer d'un
      coup d'œil sans jamais assombrir la page. */
   --card-open: #eaf2ff;
-  --card-registry: #eafbf3;
   --card-archive: #fff3e6;
   --card-admin: #fdeaf0;
   --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
@@ -351,21 +350,13 @@ button.btn-loading::after {
   text-align: center;
 }
 
-.auth-footer {
-  margin: 1.5rem 0 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--accent);
-  text-align: center;
-  line-height: 1.5;
-}
-
 .app-watermark {
   position: fixed;
   left: 0.6rem;
   bottom: 0.4rem;
   font-size: 0.65rem;
-  color: var(--muted);
+  font-weight: 700;
+  color: var(--accent);
   background: rgba(255, 255, 255, 0.75);
   padding: 0.1rem 0.4rem;
   border-radius: 6px;
@@ -460,7 +451,6 @@ main {
 }
 
 .card-open { background: var(--card-open); }
-.card-registry { background: var(--card-registry); }
 .card-archive { background: var(--card-archive); }
 .card-admin { background: var(--card-admin); }
 
