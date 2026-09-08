@@ -354,6 +354,19 @@ button.btn-loading::after {
   line-height: 1.5;
 }
 
+.app-watermark {
+  position: fixed;
+  left: 0.6rem;
+  bottom: 0.4rem;
+  font-size: 0.65rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 5;
+}
+
 .error {
   color: var(--danger);
   min-height: 1.2rem;
