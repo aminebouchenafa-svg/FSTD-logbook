@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fstd-logbook-static-v4';
+const CACHE_NAME = 'fstd-logbook-static-v5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((response) => {
         if (response.ok) {
           const clone = response.clone();

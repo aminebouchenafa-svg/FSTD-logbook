@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fstd-logbook-v4';
+const CACHE_NAME = 'fstd-logbook-v5';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -37,7 +37,7 @@ self.addEventListener('fetch', (event) => {
   // Réseau en priorité (toujours la dernière version quand la connexion est
   // là) ; le cache ne sert que de secours hors-ligne.
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((response) => {
         if (response.ok) {
           const clone = response.clone();
