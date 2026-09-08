@@ -50,7 +50,7 @@
      coup d'œil sans jamais assombrir la page. */
   --card-open: #eaf2ff;
   --card-archive: #fff3e6;
-  --card-admin: #f2e6fa;
+  --card-admin: #e0f2fe;
   --shadow-sm: 0 1px 2px rgba(28, 36, 48, 0.05);
   --shadow-md: 0 8px 24px rgba(28, 36, 48, 0.08);
   --shadow-lg: 0 20px 50px rgba(28, 36, 48, 0.14);
@@ -196,6 +196,7 @@ button.small {
 
 /* ===== Auth screen ===== */
 .auth-screen {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -351,17 +352,20 @@ button.btn-loading::after {
 }
 
 .app-watermark {
-  position: fixed;
-  left: 0.6rem;
-  bottom: 0.4rem;
+  padding: 1.5rem 1.5rem 0.75rem;
   font-size: 0.65rem;
   font-weight: 700;
   color: var(--accent);
-  background: rgba(255, 255, 255, 0.75);
-  padding: 0.1rem 0.4rem;
-  border-radius: 6px;
-  pointer-events: none;
-  z-index: 5;
+  text-align: left;
+}
+
+/* Sur l'écran de connexion (toujours exactement 100vh, jamais de défilement),
+   ancré dans le coin plutôt qu'en flux pour ne pas perturber le centrage. */
+.auth-screen .app-watermark {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.4rem;
+  padding: 0;
 }
 
 .error {
