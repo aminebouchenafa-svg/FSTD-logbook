@@ -451,6 +451,7 @@ main {
 }
 
 .card-open { background: var(--card-open); }
+.card-registry { background: var(--bg-elevated-2); }
 .card-archive { background: var(--card-archive); }
 .card-admin { background: var(--card-admin); }
 
