@@ -703,6 +703,8 @@ tbody tr:hover {
   box-shadow: var(--shadow-lg);
 }
 
+.modal-open { background: var(--card-open); }
+
 .modal-wide {
   max-width: 680px;
 }
