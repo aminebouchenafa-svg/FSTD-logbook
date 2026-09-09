@@ -367,7 +367,7 @@ function renderTable(pendingIds) {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>PDF</button>
-          ${s.remarques ? `<button class="report-btn" data-action="reclamation" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>Réclamation</button>` : ''}
+          ${s.remarques ? `<button class="report-btn" data-action="reclamation" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>Remarques</button>` : ''}
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
