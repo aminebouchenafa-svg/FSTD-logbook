@@ -785,6 +785,77 @@ tbody tr:hover {
   font-weight: 600;
 }
 
+.defect-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.defect-group {
+  border: 1.5px solid rgba(0, 188, 212, 0.35);
+  border-radius: 12px;
+  background: var(--cyan-soft);
+  overflow: hidden;
+}
+
+.defect-group summary {
+  cursor: pointer;
+  padding: 0.6rem 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--cyan);
+  list-style: none;
+}
+
+.defect-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.defect-group summary::before {
+  content: '▸ ';
+}
+
+.defect-group[open] summary::before {
+  content: '▾ ';
+}
+
+.defect-group-other {
+  border-color: var(--border);
+  background: var(--bg-elevated-2);
+}
+
+.defect-group-other summary {
+  color: var(--muted);
+}
+
+.defect-checklist {
+  padding: 0.25rem 1rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--bg-elevated);
+}
+
+.defect-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.defect-item input[type='checkbox'] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cyan);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

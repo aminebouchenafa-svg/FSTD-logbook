@@ -291,10 +291,11 @@
             <input type="password" id="close-pin" required />
           </label>
         </div>
-        <label class="full-width">
-          Remarques
-          <textarea id="close-remarques" rows="3" placeholder="Observations sur la séance…"></textarea>
-        </label>
+        <div class="full-width">
+          <span class="field-label">Remarques techniques (optionnel)</span>
+          <p class="hint">Cochez les anomalies constatées, ou détaillez dans « Autre ».</p>
+          <div id="defect-accordion" class="defect-accordion"></div>
+        </div>
 
         <div class="full-width">
           <span class="field-label">Signature électronique</span>

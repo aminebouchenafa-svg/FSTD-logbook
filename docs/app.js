@@ -18,6 +18,126 @@ let fullscreenSessionId = null;
 let hasSignature = false;
 let drawing = false;
 
+// Pannes/dysfonctionnements types du simulateur (FFS), regroupés par
+// sous-système technique, proposés à la clôture d'une séance pour
+// structurer les remarques envoyées à la maintenance.
+const DEFECT_CATEGORIES = [
+  {
+    label: `Système de Mouvement`,
+    items: [
+      `Déclenchement intempestif des sécurités (Motion Trip / Emergency Stop)`,
+      `Perte de pression hydraulique ou défaut des actionneurs électriques`,
+      `Saccades, vibrations anormales ou "bumping" en butée de vérin`,
+      `Désalignement ou blocage de la cabine (cockpit bloqué en position inclinée ou non horizontale)`,
+      `Panne du système de seuillage ou de l'effet de sol (buffet / secousses au roulis/atterrissage)`,
+    ],
+  },
+  {
+    label: `Système Visuel et Collimation`,
+    items: [
+      `Panne d'un ou plusieurs projecteurs (lampe grillée, surchauffe)`,
+      `Perte de synchronisation ou plantage d'un canal d'affichage (écran noir sur un segment de l'écran cylindrique)`,
+      `Défaut de fusion des bords (Edge Blending déréglé créant des bandes lumineuses ou sombres)`,
+      `Gel de l'image ou décalage de la base de données visuelle (décalage entre l'horizon physique et les repères de piste)`,
+      `Corruption des textures de scènes (bâtiments ou pistes qui disparaissent ou clignotent)`,
+    ],
+  },
+  {
+    label: `Restitution des Efforts (CLS)`,
+    items: [
+      `Perte totale de restitution des efforts (commandes de vol "molles" ou sans résistance)`,
+      `Blocage ou résistance excessive d'une colonne de commande, du volant ou du palonnier`,
+      `Désynchronisation des efforts entre le siège gauche et le siège droit (dissymétrie des manches)`,
+      `Vibrations parasites ou "flutter" artificiel erroné dans les commandes`,
+    ],
+  },
+  {
+    label: `Système Sonore`,
+    items: [
+      `Perte totale du son (silence radio, absence de bruits aérodynamiques ou de réacteurs)`,
+      `Distorsion, saturation ou grésillements dans les casques ou les haut-parleurs de l'ambiance cockpit`,
+      `Absence de déclenchement de certains sons spécifiques (bruit de train d'atterrissage, alarmes phoniques, bruits de roulement sur piste)`,
+    ],
+  },
+  {
+    label: `Console Instructeur (IOS)`,
+    items: [
+      `Plantage de l'application IOS (gel de l'interface tactile ou de l'écran de contrôle)`,
+      `Perte de communication entre la console et le calculateur hôte du simulateur`,
+      `Impossibilité d'injecter des pannes, de repositionner l'avion (reposition) ou de modifier les conditions météo`,
+      `Dysfonctionnement de l'enregistrement des données de vol (Flight Data Recorder de la session)`,
+    ],
+  },
+  {
+    label: `Calculateurs Hôte et Avionique`,
+    items: [
+      `Gel ou plantage des calculateurs de vol provoquant un "freeze" total de la simulation`,
+      `Dysfonctionnement des écrans du cockpit (DU, PFD, ND, FMC/CDU qui deviennent noirs ou affichent des "flags" d'erreur système)`,
+      `Perte de données de navigation (base de données nav en échec de chargement)`,
+      `Défaut de synchronisation des entrées/sorties (I/O boards) entraînant des boutons ou interrupteurs inopérants dans le cockpit`,
+    ],
+  },
+  {
+    label: `Environnement et Servitudes`,
+    items: [
+      `Panne de la climatisation ou de la ventilation du cockpit (surchauffe rapide de l'équipage en cabine fermée)`,
+      `Dysfonctionnement de l'éclairage des planches de bord (backlighting défectueux ou inopérant)`,
+      `Panne des systèmes d'oxygène ou masques d'oxygène de secours du simulateur`,
+    ],
+  },
+];
+
+function renderDefectAccordion() {
+  const container = document.getElementById('defect-accordion');
+  if (!container) return;
+  const groups = DEFECT_CATEGORIES.map(
+    (cat) => `
+    <details class="defect-group">
+      <summary>${escapeHtml(cat.label)}</summary>
+      <div class="defect-checklist">
+        ${cat.items
+          .map(
+            (item) => `
+          <label class="defect-item">
+            <input type="checkbox" class="defect-checkbox" data-category="${escapeHtml(cat.label)}" value="${escapeHtml(item)}" />
+            ${escapeHtml(item)}
+          </label>`
+          )
+          .join('')}
+      </div>
+    </details>`
+  ).join('');
+  container.innerHTML = `${groups}
+    <details class="defect-group defect-group-other">
+      <summary>Autre</summary>
+      <div class="defect-checklist">
+        <textarea id="close-remarques-other" rows="3" placeholder="Décrivez toute autre anomalie…"></textarea>
+      </div>
+    </details>`;
+}
+
+function resetDefectAccordion() {
+  document.querySelectorAll('.defect-checkbox').forEach((cb) => { cb.checked = false; });
+  document.querySelectorAll('.defect-group').forEach((d) => { d.open = false; });
+  const other = document.getElementById('close-remarques-other');
+  if (other) other.value = '';
+}
+
+// Compose une remarque lisible à partir des cases cochées (regroupées par
+// sous-système) et du texte libre "Autre".
+function collectDefectRemarques() {
+  const byCategory = new Map();
+  document.querySelectorAll('.defect-checkbox:checked').forEach((cb) => {
+    const cat = cb.dataset.category;
+    if (!byCategory.has(cat)) byCategory.set(cat, []);
+    byCategory.get(cat).push(cb.value);
+  });
+  const lines = Array.from(byCategory, ([cat, items]) => `[${cat}] ${items.join(' ; ')}`);
+  const other = (document.getElementById('close-remarques-other')?.value || '').trim();
+  if (other) lines.push(`Autre : ${other}`);
+  return lines.join('\n');
+}
+
 // ---------- IndexedDB ----------
 
 function openDb() {
@@ -469,7 +589,7 @@ function openCloseModal(session) {
   summaryParts.push(`${session.typeTraining}/${session.typeSeance}`);
   document.getElementById('close-summary').textContent = summaryParts.join(' · ');
   document.getElementById('close-heureFin').value = nowHm();
-  document.getElementById('close-remarques').value = '';
+  resetDefectAccordion();
   document.getElementById('close-error').textContent = '';
   clearSignatureCanvas();
   document.getElementById('close-modal').hidden = false;
@@ -481,7 +601,7 @@ async function handleCloseSubmit(e) {
   errorEl.textContent = '';
 
   const heureFin = document.getElementById('close-heureFin').value;
-  const remarques = document.getElementById('close-remarques').value.trim();
+  const remarques = collectDefectRemarques();
 
   if (!heureFin) {
     errorEl.textContent = "L'heure de fin est obligatoire.";
@@ -1168,6 +1288,7 @@ async function init() {
   setupSignaturePad();
   bindEvents();
   preloadLogo();
+  renderDefectAccordion();
 
   if (checkAuth()) {
     showAppScreen();
