@@ -24,6 +24,7 @@ let drawing = false;
 const DEFECT_CATEGORIES = [
   {
     label: `Système de Mouvement`,
+    color: `#dc2626`,
     items: [
       `Déclenchement intempestif des sécurités (Motion Trip / Emergency Stop)`,
       `Perte de pression hydraulique ou défaut des actionneurs électriques`,
@@ -34,6 +35,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Système Visuel et Collimation`,
+    color: `#2563eb`,
     items: [
       `Panne d'un ou plusieurs projecteurs (lampe grillée, surchauffe)`,
       `Perte de synchronisation ou plantage d'un canal d'affichage (écran noir sur un segment de l'écran cylindrique)`,
@@ -44,6 +46,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Restitution des Efforts (CLS)`,
+    color: `#ea580c`,
     items: [
       `Perte totale de restitution des efforts (commandes de vol "molles" ou sans résistance)`,
       `Blocage ou résistance excessive d'une colonne de commande, du volant ou du palonnier`,
@@ -53,6 +56,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Système Sonore`,
+    color: `#16a34a`,
     items: [
       `Perte totale du son (silence radio, absence de bruits aérodynamiques ou de réacteurs)`,
       `Distorsion, saturation ou grésillements dans les casques ou les haut-parleurs de l'ambiance cockpit`,
@@ -61,6 +65,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Console Instructeur (IOS)`,
+    color: `#9333ea`,
     items: [
       `Plantage de l'application IOS (gel de l'interface tactile ou de l'écran de contrôle)`,
       `Perte de communication entre la console et le calculateur hôte du simulateur`,
@@ -70,6 +75,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Calculateurs Hôte et Avionique`,
+    color: `#0e7490`,
     items: [
       `Gel ou plantage des calculateurs de vol provoquant un "freeze" total de la simulation`,
       `Dysfonctionnement des écrans du cockpit (DU, PFD, ND, FMC/CDU qui deviennent noirs ou affichent des "flags" d'erreur système)`,
@@ -79,6 +85,7 @@ const DEFECT_CATEGORIES = [
   },
   {
     label: `Environnement et Servitudes`,
+    color: `#a16207`,
     items: [
       `Panne de la climatisation ou de la ventilation du cockpit (surchauffe rapide de l'équipage en cabine fermée)`,
       `Dysfonctionnement de l'éclairage des planches de bord (backlighting défectueux ou inopérant)`,
@@ -92,7 +99,7 @@ function renderDefectAccordion() {
   if (!container) return;
   const groups = DEFECT_CATEGORIES.map(
     (cat) => `
-    <details class="defect-group">
+    <details class="defect-group" style="--defect-color: ${cat.color}">
       <summary>${escapeHtml(cat.label)}</summary>
       <div class="defect-checklist">
         ${cat.items
@@ -114,6 +121,19 @@ function renderDefectAccordion() {
         <textarea id="close-remarques-other" rows="3" placeholder="Décrivez toute autre anomalie…"></textarea>
       </div>
     </details>`;
+
+  // Accordéon : un seul groupe ouvert à la fois, pour rester compact avec
+  // une longue liste de catégories.
+  const allGroups = container.querySelectorAll('.defect-group');
+  allGroups.forEach((detail) => {
+    detail.addEventListener('toggle', () => {
+      if (detail.open) {
+        allGroups.forEach((other) => {
+          if (other !== detail) other.open = false;
+        });
+      }
+    });
+  });
 }
 
 function resetDefectAccordion() {
