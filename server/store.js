@@ -3,12 +3,10 @@ const path = require('path');
 
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'sessions.json');
-const COUNTER_FILE = path.join(DATA_DIR, 'counter.json');
 
 function ensureStore() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, '[]', 'utf8');
-  if (!fs.existsSync(COUNTER_FILE)) fs.writeFileSync(COUNTER_FILE, JSON.stringify({ next: 1 }), 'utf8');
 }
 
 function readAll() {
@@ -23,14 +21,6 @@ function readAll() {
 function writeAll(sessions) {
   ensureStore();
   fs.writeFileSync(DATA_FILE, JSON.stringify(sessions, null, 2), 'utf8');
-}
-
-function nextNumero() {
-  ensureStore();
-  const counter = JSON.parse(fs.readFileSync(COUNTER_FILE, 'utf8'));
-  const numero = counter.next;
-  fs.writeFileSync(COUNTER_FILE, JSON.stringify({ next: numero + 1 }), 'utf8');
-  return numero;
 }
 
 function listSessions() {
@@ -54,7 +44,9 @@ function createSession(data, user) {
 
   const session = {
     id,
-    numero: nextNumero(),
+    // Dérivé des séances existantes plutôt qu'un compteur séparé : la
+    // numérotation reprend naturellement à 1 si le registre est vidé.
+    numero: sessions.reduce((max, s) => Math.max(max, s.numero || 0), 0) + 1,
     date: data.date,
     creneau: data.creneau,
     heureDebut: data.heureDebut,

@@ -6,7 +6,6 @@
 const PASSWORDS = ['SIM-boeing737'];
 const ADMIN_CODE = '737800';
 const AUTH_KEY = 'fstd_static_unlocked';
-const COUNTER_KEY = 'fstd_static_counter';
 const DB_NAME = 'fstd-logbook-static';
 const DB_VERSION = 1;
 
@@ -66,10 +65,10 @@ async function deleteSessionLocal(id) {
   return reqToPromise(store.delete(id));
 }
 
+// Dérivé des séances existantes plutôt qu'un compteur séparé : la
+// numérotation reprend naturellement à 1 si le registre est entièrement vidé.
 function nextNumero() {
-  const n = Number(localStorage.getItem(COUNTER_KEY) || '0') + 1;
-  localStorage.setItem(COUNTER_KEY, String(n));
-  return n;
+  return sessions.reduce((max, s) => Math.max(max, s.numero || 0), 0) + 1;
 }
 
 // ---------- Utilitaires ----------
