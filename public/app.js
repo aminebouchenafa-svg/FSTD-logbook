@@ -367,6 +367,7 @@ function renderTable(pendingIds) {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>PDF</button>
+          ${s.remarques ? `<button class="report-btn" data-action="reclamation" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>Réclamation</button>` : ''}
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
@@ -734,6 +735,15 @@ async function downloadSessionPdf(id) {
   }
 }
 
+async function downloadReclamationPdf(id) {
+  const res = await apiFetch(`/api/sessions/${id}/reclamation-pdf`);
+  try {
+    await shareOrDownloadResponse(res, `reclamation-seance-${id}.pdf`, 'Signalement simulateur');
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
 async function handleShareSelection() {
   const msg = document.getElementById('export-message');
   if (selectedIds.size === 0) return;
@@ -878,6 +888,7 @@ function bindEvents() {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
+    if (btn.dataset.action === 'reclamation') downloadReclamationPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
   });
 

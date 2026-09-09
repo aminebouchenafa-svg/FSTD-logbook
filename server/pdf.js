@@ -189,6 +189,37 @@ async function sessionPdfBuffer(session) {
   return bufferPromise;
 }
 
+// Fiche courte à destination de la maintenance simulateur : ne reprend que
+// les informations utiles pour situer l'anomalie, avec les remarques mises
+// en avant (couleur cyan, distincte du rose utilisé pour le registre).
+async function reclamationPdfBuffer(session) {
+  const doc = new PDFDocument({ margin: 50 });
+  const bufferPromise = bufferFromDoc(doc);
+
+  drawHeader(doc, `Signalement — Séance n° ${session.numero}`);
+
+  const col1 = doc.page.margins.left;
+  let y = doc.y;
+  y = drawField(doc, col1, y, 'Date', formatDate(session.date), '#c7010d');
+  y = drawField(doc, col1, y, 'Slot', session.creneau, badgeHex(session.creneau));
+  y = drawField(doc, col1, y, 'Type de simulation', session.typeSeance, badgeHex(session.typeSeance));
+  y = drawField(doc, col1, y, 'TRI/TRE (rapporteur)', nameMat(session.nomTri, session.matriculeTri), '#a020f0');
+
+  doc.x = col1;
+  doc.y = y + 6;
+  doc.fontSize(9.5);
+  const label = 'Remarques / anomalie signalée';
+  const padX = 4;
+  const w = doc.widthOfString(label) + padX * 2;
+  const badgeY = doc.y;
+  doc.roundedRect(col1, badgeY, w, 16, 3).fill(lightenHex('#00bcd4'));
+  doc.fillColor('#00bcd4').text(label, col1 + padX, badgeY + 4, { lineBreak: false });
+  doc.fontSize(13).fillColor('#101828').text(session.remarques || '—', col1, badgeY + 24, { width: doc.page.width - 100 });
+
+  doc.end();
+  return bufferPromise;
+}
+
 async function registryPdfBuffer(sessions, { from, to } = {}) {
   const doc = new PDFDocument({ margin: 40, layout: 'landscape' });
   const bufferPromise = bufferFromDoc(doc);
@@ -264,4 +295,4 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
   return bufferPromise;
 }
 
-module.exports = { sessionPdfBuffer, registryPdfBuffer };
+module.exports = { sessionPdfBuffer, reclamationPdfBuffer, registryPdfBuffer };

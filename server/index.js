@@ -146,6 +146,16 @@ app.get('/api/sessions/:id/pdf', auth.requireAuth, async (req, res) => {
   res.send(buffer);
 });
 
+app.get('/api/sessions/:id/reclamation-pdf', auth.requireAuth, async (req, res) => {
+  const session = store.getSession(req.params.id);
+  if (!session) return res.status(404).json({ errors: ['Séance introuvable.'] });
+  if (!session.remarques) return res.status(400).json({ errors: ['Aucune remarque enregistrée pour cette séance.'] });
+  const buffer = await pdf.reclamationPdfBuffer(session);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="reclamation-seance-${session.numero}.pdf"`);
+  res.send(buffer);
+});
+
 app.get('/api/export/pdf', auth.requireAuth, async (req, res) => {
   const { from, to, ids } = req.query;
   let sessions = store.listSessions();

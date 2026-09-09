@@ -280,6 +280,7 @@ function renderTable() {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}">PDF</button>
+          ${s.remarques ? `<button class="report-btn" data-action="reclamation" data-id="${s.id}">Réclamation</button>` : ''}
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
@@ -669,6 +670,42 @@ function drawSessionPdf(doc, session) {
   return y;
 }
 
+// Fiche courte à destination de la maintenance simulateur : ne reprend que
+// les informations utiles pour situer l'anomalie (pas tout le détail de la
+// séance), avec les remarques mises en avant.
+function drawReclamationPdf(doc, session) {
+  let y0 = drawPdfHeader(doc);
+  doc.setFontSize(14);
+  doc.setTextColor(20, 24, 40);
+  doc.text(`Signalement — Séance n° ${session.numero}`, 14, y0);
+  y0 += 2;
+
+  const rows = [
+    ['Date', formatDate(session.date), '#c7010d'],
+    ['Slot', session.creneau, badgeHex(session.creneau)],
+    ['Type de simulation', session.typeSeance, badgeHex(session.typeSeance)],
+    ['TRI/TRE (rapporteur)', pdfNameMat(session.nomTri, session.matriculeTri), '#a020f0'],
+  ];
+
+  let y = y0 + 13;
+  rows.forEach(([label, value, color]) => {
+    drawLabelBadge(doc, label, 14, y, color);
+    doc.setFontSize(12.5);
+    doc.setTextColor(20, 24, 40);
+    doc.text(String(value ?? '—'), 78, y);
+    y += 9;
+  });
+
+  y += 6;
+  drawLabelBadge(doc, 'Remarques / anomalie signalée', 14, y, '#00bcd4');
+  y += 12;
+  doc.setFontSize(12.5);
+  doc.setTextColor(20, 24, 40);
+  doc.text(doc.splitTextToSize(session.remarques || '—', 180), 14, y);
+
+  return y;
+}
+
 function sessionsTablePdf(doc, sessionsToPrint, title) {
   const headerY = drawPdfHeader(doc);
   doc.setFontSize(11);
@@ -745,6 +782,14 @@ async function downloadSessionPdf(id) {
   const doc = new jsPDF();
   drawSessionPdf(doc, session);
   await shareOrDownloadPdfDoc(doc, `seance-${session.numero}.pdf`, 'Fiche de séance');
+}
+
+async function downloadReclamationPdf(id) {
+  const session = sessions.find((s) => s.id === id);
+  if (!session || !session.remarques) return;
+  const doc = new jsPDF();
+  drawReclamationPdf(doc, session);
+  await shareOrDownloadPdfDoc(doc, `reclamation-seance-${session.numero}.pdf`, 'Signalement simulateur');
 }
 
 async function handleShareSelection() {
@@ -1013,6 +1058,7 @@ function bindEvents() {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
+    if (btn.dataset.action === 'reclamation') downloadReclamationPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
   });
 

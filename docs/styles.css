@@ -663,6 +663,7 @@ tbody tr:hover {
 }
 
 .pdf-btn { background: var(--pink-soft); color: var(--pink); border: 1.5px solid rgba(255, 20, 147, 0.4); }
+.report-btn { background: var(--cyan-soft); color: var(--cyan); border: 1.5px solid rgba(0, 188, 212, 0.4); font-weight: 700; }
 .delete-btn { background: var(--danger-soft); color: var(--danger); border: 1.5px solid rgba(220, 38, 38, 0.4); font-weight: 700; }
 
 /* ===== Export ===== */
