@@ -172,6 +172,7 @@ async function renderAll() {
   });
   renderOpenSessions();
   renderTable();
+  renderRemarksSection();
 }
 
 function renderOpenSessions() {
@@ -197,6 +198,34 @@ function renderOpenSessions() {
         <span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
       </div>
       <button type="button" data-action="close-session" data-id="${s.id}">Clôturer</button>
+    </div>`
+    )
+    .join('');
+}
+
+// Séparé du Registre : ces remarques concernent le simulateur lui-même
+// (pannes, anomalies) et sont destinées à la maintenance, pas au suivi
+// des séances de formation.
+function renderRemarksSection() {
+  const container = document.getElementById('remarks-list');
+  const withRemarks = sessions.filter((s) => s.remarques);
+
+  if (withRemarks.length === 0) {
+    container.innerHTML = '<p class="empty">Aucune remarque technique enregistrée.</p>';
+    return;
+  }
+
+  container.innerHTML = withRemarks
+    .map(
+      (s) => `
+    <div class="remark-card" data-id="${s.id}">
+      <div class="remark-card-header">
+        <strong>${formatDate(s.date)}</strong>
+        <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span>
+        <span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
+      </div>
+      <p class="remark-text">${escapeHtml(s.remarques)}</p>
+      <button class="report-btn" data-action="reclamation" data-id="${s.id}">Télécharger le PDF</button>
     </div>`
     )
     .join('');
@@ -280,7 +309,6 @@ function renderTable() {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}">PDF</button>
-          ${s.remarques ? `<button class="report-btn" data-action="reclamation" data-id="${s.id}">Remarques</button>` : ''}
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
@@ -1058,8 +1086,12 @@ function bindEvents() {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
-    if (btn.dataset.action === 'reclamation') downloadReclamationPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
+  });
+
+  document.getElementById('remarks-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action="reclamation"]');
+    if (btn) downloadReclamationPdf(btn.dataset.id);
   });
 
   document.getElementById('sessions-body').addEventListener('change', (e) => {
