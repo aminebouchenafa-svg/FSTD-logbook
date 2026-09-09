@@ -124,6 +124,22 @@ function deleteSession(id) {
   return true;
 }
 
+// Restauration depuis une sauvegarde JSON : remplace/ajoute des séances
+// complètes par id, sans passer par la validation d'ouverture/clôture
+// habituelle (les enregistrements importés sont déjà complets).
+function importSessions(sessionsToImport) {
+  const existing = readAll();
+  const byId = new Map(existing.map((s) => [s.id, s]));
+  let imported = 0;
+  for (const s of sessionsToImport) {
+    if (!s || typeof s !== 'object' || !s.id || !s.date) continue;
+    byId.set(s.id, { ...byId.get(s.id), ...s });
+    imported++;
+  }
+  writeAll(Array.from(byId.values()));
+  return imported;
+}
+
 module.exports = {
   listSessions,
   getSession,
@@ -131,4 +147,5 @@ module.exports = {
   updateSession,
   closeSession,
   deleteSession,
+  importSessions,
 };

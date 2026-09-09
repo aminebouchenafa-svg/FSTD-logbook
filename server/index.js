@@ -125,6 +125,16 @@ app.delete('/api/sessions/:id', auth.requireAuth, (req, res) => {
   res.status(204).end();
 });
 
+// ---- Sauvegarde / restauration ----
+
+app.post('/api/import', auth.requireAuth, (req, res) => {
+  if (!Array.isArray(req.body)) {
+    return res.status(400).json({ errors: ['Format invalide : un tableau de séances est attendu.'] });
+  }
+  const imported = store.importSessions(req.body);
+  res.json({ imported });
+});
+
 // ---- PDF export ----
 
 app.get('/api/sessions/:id/pdf', auth.requireAuth, async (req, res) => {

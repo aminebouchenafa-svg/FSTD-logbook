@@ -147,6 +147,16 @@
           <button type="button" id="export-email-btn" class="secondary">Envoyer</button>
         </div>
         <p id="export-message" class="hint"></p>
+
+        <p class="hint">
+          Sauvegarde complète du registre (à faire de temps en temps) : le fichier peut être
+          réimporté pour tout récupérer en cas de besoin.
+        </p>
+        <div class="export-row">
+          <button type="button" id="export-json-btn" class="secondary">Exporter les données (JSON)</button>
+          <button type="button" id="import-json-btn" class="secondary">Importer (JSON)</button>
+          <input type="file" id="import-json-input" accept="application/json,.json" hidden />
+        </div>
       </section>
     </main>
 

@@ -659,6 +659,72 @@ async function handleExportEmail() {
   }
 }
 
+// ---------- Sauvegarde / restauration (JSON) ----------
+
+async function handleExportData() {
+  const filename = `sauvegarde-fstd-${todayIso()}.json`;
+  const blob = new Blob([JSON.stringify(sessions, null, 2)], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'Sauvegarde FSTD Logbook' });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function handleImportDataFile(file) {
+  if (!navigator.onLine) {
+    alert('Import impossible hors connexion.');
+    return;
+  }
+  let data;
+  try {
+    data = JSON.parse(await file.text());
+  } catch {
+    alert("Ce fichier n'est pas un JSON valide.");
+    return;
+  }
+  if (!Array.isArray(data)) {
+    alert('Format invalide : ce fichier ne contient pas une liste de séances.');
+    return;
+  }
+  const validSessions = data.filter((s) => s && typeof s === 'object' && s.id && s.date);
+  if (validSessions.length === 0) {
+    alert('Aucune séance valide trouvée dans ce fichier.');
+    return;
+  }
+  const confirmed = confirm(
+    `Importer ${validSessions.length} séance(s) depuis ce fichier ? Les séances déjà présentes avec le même identifiant seront mises à jour, les autres seront ajoutées.`
+  );
+  if (!confirmed) return;
+
+  try {
+    const res = await apiFetch('/api/import', { method: 'POST', body: JSON.stringify(validSessions) });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert((body.errors || []).join('\n') || "Échec de l'import.");
+      return;
+    }
+    await syncAndRender();
+    alert(`${body.imported} séance(s) importée(s) avec succès.`);
+  } catch {
+    alert("Échec de l'import (réseau indisponible).");
+  }
+}
+
 async function downloadSessionPdf(id) {
   const res = await apiFetch(`/api/sessions/${id}/pdf`);
   try {
@@ -841,6 +907,15 @@ function bindEvents() {
 
   document.getElementById('export-pdf-btn').addEventListener('click', handleExportPdf);
   document.getElementById('export-email-btn').addEventListener('click', handleExportEmail);
+  document.getElementById('export-json-btn').addEventListener('click', handleExportData);
+  document.getElementById('import-json-btn').addEventListener('click', () => {
+    document.getElementById('import-json-input').click();
+  });
+  document.getElementById('import-json-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (file) await handleImportDataFile(file);
+  });
 
   window.addEventListener('online', () => {
     updateSyncUi();
