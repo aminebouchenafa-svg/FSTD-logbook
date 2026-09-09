@@ -25,6 +25,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Système de Mouvement`,
     color: `#dc2626`,
+    soft: `rgba(220, 38, 38, 0.14)`,
     items: [
       `Déclenchement intempestif des sécurités (Motion Trip / Emergency Stop)`,
       `Perte de pression hydraulique ou défaut des actionneurs électriques`,
@@ -36,6 +37,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Système Visuel et Collimation`,
     color: `#2563eb`,
+    soft: `rgba(37, 99, 235, 0.12)`,
     items: [
       `Panne d'un ou plusieurs projecteurs (lampe grillée, surchauffe)`,
       `Perte de synchronisation ou plantage d'un canal d'affichage (écran noir sur un segment de l'écran cylindrique)`,
@@ -47,6 +49,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Restitution des Efforts (CLS)`,
     color: `#ea580c`,
+    soft: `rgba(234, 88, 12, 0.14)`,
     items: [
       `Perte totale de restitution des efforts (commandes de vol "molles" ou sans résistance)`,
       `Blocage ou résistance excessive d'une colonne de commande, du volant ou du palonnier`,
@@ -57,6 +60,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Système Sonore`,
     color: `#16a34a`,
+    soft: `rgba(22, 163, 74, 0.12)`,
     items: [
       `Perte totale du son (silence radio, absence de bruits aérodynamiques ou de réacteurs)`,
       `Distorsion, saturation ou grésillements dans les casques ou les haut-parleurs de l'ambiance cockpit`,
@@ -66,6 +70,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Console Instructeur (IOS)`,
     color: `#9333ea`,
+    soft: `rgba(147, 51, 234, 0.12)`,
     items: [
       `Plantage de l'application IOS (gel de l'interface tactile ou de l'écran de contrôle)`,
       `Perte de communication entre la console et le calculateur hôte du simulateur`,
@@ -76,6 +81,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Calculateurs Hôte et Avionique`,
     color: `#0e7490`,
+    soft: `rgba(14, 116, 144, 0.14)`,
     items: [
       `Gel ou plantage des calculateurs de vol provoquant un "freeze" total de la simulation`,
       `Dysfonctionnement des écrans du cockpit (DU, PFD, ND, FMC/CDU qui deviennent noirs ou affichent des "flags" d'erreur système)`,
@@ -86,6 +92,7 @@ const DEFECT_CATEGORIES = [
   {
     label: `Environnement et Servitudes`,
     color: `#a16207`,
+    soft: `rgba(161, 98, 7, 0.16)`,
     items: [
       `Panne de la climatisation ou de la ventilation du cockpit (surchauffe rapide de l'équipage en cabine fermée)`,
       `Dysfonctionnement de l'éclairage des planches de bord (backlighting défectueux ou inopérant)`,
@@ -99,7 +106,7 @@ function renderDefectAccordion() {
   if (!container) return;
   const groups = DEFECT_CATEGORIES.map(
     (cat) => `
-    <details class="defect-group" style="--defect-color: ${cat.color}">
+    <details class="defect-group" style="--defect-color: ${cat.color}; --defect-soft: ${cat.soft}">
       <summary>${escapeHtml(cat.label)}</summary>
       <div class="defect-checklist">
         ${cat.items

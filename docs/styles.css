@@ -793,7 +793,7 @@ tbody tr:hover {
 }
 
 .defect-group {
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--defect-color, var(--border));
   border-radius: 12px;
   overflow: hidden;
 }
@@ -803,8 +803,8 @@ tbody tr:hover {
   padding: 0.75rem 1.1rem;
   font-weight: 800;
   font-size: 1rem;
-  color: #fff;
-  background: var(--defect-color, #475569);
+  color: var(--defect-color, var(--muted));
+  background: var(--defect-soft, var(--bg-elevated-2));
   list-style: none;
 }
 
@@ -818,10 +818,6 @@ tbody tr:hover {
 
 .defect-group[open] summary::before {
   content: '▾ ';
-}
-
-.defect-group-other summary {
-  background: #475569;
 }
 
 .defect-checklist {
@@ -849,7 +845,7 @@ tbody tr:hover {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
-  accent-color: var(--navy);
+  accent-color: var(--defect-color, var(--navy));
 }
 
 .modal-actions {
