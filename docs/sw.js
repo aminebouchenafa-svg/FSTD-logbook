@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fstd-logbook-static-v5';
+const CACHE_NAME = 'fstd-logbook-static-v6';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
   './manifest.json',
+  './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './branding/air-algerie-logo.png',

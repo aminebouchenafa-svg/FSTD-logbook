@@ -17,6 +17,30 @@ let closingSessionId = null;
 let fullscreenSessionId = null;
 let hasSignature = false;
 let drawing = false;
+let wakeLock = null;
+
+// ---------- Veille écran ----------
+
+// Empêche l'iPad de s'éteindre/se verrouiller pendant qu'un chrono tourne en
+// plein écran, pour que l'affichage reste visible sur les écrans connectés
+// (une fois l'iPad verrouillé, l'écran externe s'éteint aussi).
+async function acquireWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch {
+    // Refusé (batterie faible, onglet en arrière-plan…) : on continue sans.
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
 
 // ---------- IndexedDB ----------
 
@@ -227,11 +251,13 @@ function openFullscreenChrono(session) {
   `;
   document.getElementById('fullscreen-chrono').hidden = false;
   tickChronos();
+  acquireWakeLock();
 }
 
 function closeFullscreenChrono() {
   document.getElementById('fullscreen-chrono').hidden = true;
   fullscreenSessionId = null;
+  releaseWakeLock();
 }
 
 function renderTable() {
@@ -891,6 +917,12 @@ function checkAuth() {
 }
 
 function bindEvents() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && fullscreenSessionId) {
+      acquireWakeLock();
+    }
+  });
+
   document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const pin = document.getElementById('login-pin').value;
