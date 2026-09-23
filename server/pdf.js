@@ -102,6 +102,38 @@ function badgeHex(type) {
   return BADGE_HEX[type] || '#101828';
 }
 
+// Mêmes couleurs que l'accordéon de clôture (docs/app.js et public/app.js),
+// pour colorer les titres de catégorie dans le PDF de signalement comme à
+// l'écran dans "Remarques techniques".
+const DEFECT_CATEGORY_HEX = {
+  'Système de Mouvement': '#dc2626',
+  'Système Visuel et Collimation': '#2563eb',
+  'Restitution des Efforts (CLS)': '#ea580c',
+  'Système Sonore': '#16a34a',
+  'Console Instructeur (IOS)': '#9333ea',
+  'Calculateurs Hôte et Avionique': '#0e7490',
+  'Environnement et Servitudes': '#a16207',
+};
+const OTHER_REMARK_HEX = '#64748b';
+
+// Reconstitue, à partir du texte brut stocké par collectDefectRemarques côté
+// client, la catégorie et sa couleur pour chaque ligne de remarque.
+function parseRemarkLines(remarques) {
+  if (!remarques) return [];
+  return remarques
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const catMatch = line.match(/^\[(.+?)\]\s*(.*)$/);
+      if (catMatch) {
+        return { label: catMatch[1], text: catMatch[2], color: DEFECT_CATEGORY_HEX[catMatch[1]] || OTHER_REMARK_HEX };
+      }
+      const otherMatch = line.match(/^Autre\s*:\s*(.*)$/i);
+      if (otherMatch) return { label: 'Autre', text: otherMatch[1], color: OTHER_REMARK_HEX };
+      return { label: null, text: line, color: null };
+    });
+}
+
 // Nom + matricule entre parenthèses, pour les champs affichant un membre d'équipage.
 function nameMat(nom, matricule) {
   return matricule ? `${nom} (${matricule})` : nom;
@@ -225,14 +257,36 @@ async function reclamationPdfBuffer(session) {
 
   doc.x = col1;
   doc.y = y + 6;
-  doc.fontSize(9.5);
-  const label = 'Remarques / anomalie signalée';
-  const padX = 4;
-  const w = doc.widthOfString(label) + padX * 2;
-  const badgeY = doc.y;
-  doc.roundedRect(col1, badgeY, w, 16, 3).fill(lightenHex('#00bcd4'));
-  doc.fillColor('#00bcd4').text(label, col1 + padX, badgeY + 4, { lineBreak: false });
-  doc.fontSize(13).fillColor('#101828').text(session.remarques || '—', col1, badgeY + 24, { width: doc.page.width - 100 });
+  doc.fontSize(11).fillColor('#667085').text('Remarques / anomalies signalées');
+  doc.moveDown(0.5);
+
+  // Chaque catégorie de panne reprend la couleur de son badge dans
+  // l'accordéon de clôture, pour repérer le sous-système concerné d'un
+  // coup d'œil (même logique que drawField pour les champs ci-dessus).
+  const remarkLines = parseRemarkLines(session.remarques);
+  if (remarkLines.length === 0) {
+    doc.fontSize(13).fillColor('#101828').text('—');
+  } else {
+    remarkLines.forEach((l) => {
+      if (l.label) {
+        doc.fontSize(9.5);
+        const padX = 4;
+        const w = doc.widthOfString(l.label) + padX * 2;
+        const badgeY = doc.y;
+        doc.roundedRect(col1, badgeY, w, 16, 3).fill(lightenHex(l.color));
+        doc.fillColor(l.color).text(l.label, col1 + padX, badgeY + 4, { lineBreak: false });
+        doc.x = col1;
+        doc.y = badgeY + 20;
+        if (l.text) {
+          doc.fontSize(11.5).fillColor('#101828').text(l.text, col1 + 8, doc.y, { width: doc.page.width - 108 });
+        }
+      } else {
+        doc.fontSize(11.5).fillColor('#101828').text(l.text, col1, doc.y, { width: doc.page.width - 100 });
+      }
+      doc.moveDown(0.6);
+      doc.x = col1;
+    });
+  }
 
   doc.end();
   return bufferPromise;

@@ -485,7 +485,20 @@ main {
 .remark-text {
   margin: 0 0 0.75rem;
   color: var(--text);
-  white-space: pre-wrap;
+}
+
+.remark-line {
+  font-size: 1rem;
+  line-height: 1.45;
+  margin-bottom: 0.4rem;
+}
+
+.remark-line:last-child {
+  margin-bottom: 0;
+}
+
+.remark-cat {
+  font-weight: 800;
 }
 
 .section-header {
@@ -693,6 +706,7 @@ tbody tr:hover {
 
 .pdf-btn { background: var(--pink-soft); color: var(--pink); border: 1.5px solid rgba(255, 20, 147, 0.4); }
 .report-btn { background: var(--cyan-soft); color: var(--cyan); border: 1.5px solid rgba(0, 188, 212, 0.4); font-weight: 700; }
+.send-btn { background: var(--success-soft); color: var(--success); border: 1.5px solid rgba(0, 200, 83, 0.4); font-weight: 700; }
 .delete-btn { background: var(--danger-soft); color: var(--danger); border: 1.5px solid rgba(220, 38, 38, 0.4); font-weight: 700; }
 
 /* ===== Export ===== */

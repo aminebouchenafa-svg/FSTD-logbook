@@ -160,6 +160,37 @@ function collectDefectRemarques() {
   return lines.join('\n');
 }
 
+const OTHER_REMARK_COLOR = '#64748b';
+const OTHER_REMARK_SOFT = 'rgba(100, 116, 139, 0.14)';
+
+// Reconstitue, à partir du texte brut stocké (voir collectDefectRemarques
+// ci-dessus), la catégorie et sa couleur pour chaque ligne de remarque —
+// afin d'afficher les titres avec les mêmes couleurs que l'accordéon de
+// clôture, aussi bien à l'écran que dans le PDF de signalement.
+function parseRemarkLines(remarques) {
+  if (!remarques) return [];
+  return remarques
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const catMatch = line.match(/^\[(.+?)\]\s*(.*)$/);
+      if (catMatch) {
+        const cat = DEFECT_CATEGORIES.find((c) => c.label === catMatch[1]);
+        return {
+          label: catMatch[1],
+          text: catMatch[2],
+          color: cat ? cat.color : OTHER_REMARK_COLOR,
+          soft: cat ? cat.soft : OTHER_REMARK_SOFT,
+        };
+      }
+      const otherMatch = line.match(/^Autre\s*:\s*(.*)$/i);
+      if (otherMatch) {
+        return { label: 'Autre', text: otherMatch[1], color: OTHER_REMARK_COLOR, soft: OTHER_REMARK_SOFT };
+      }
+      return { label: null, text: line, color: null, soft: null };
+    });
+}
+
 // ---------- Utilitaires ----------
 
 function todayIso(d = new Date()) {
@@ -416,18 +447,27 @@ function renderRemarksSection() {
   }
 
   container.innerHTML = withRemarks
-    .map(
-      (s) => `
+    .map((s) => {
+      const lines = parseRemarkLines(s.remarques)
+        .map((l) =>
+          l.label
+            ? `<div class="remark-line"><span class="remark-cat" style="color: ${l.color}">${escapeHtml(l.label)}</span>${
+                l.text ? ` : ${escapeHtml(l.text)}` : ''
+              }</div>`
+            : `<div class="remark-line">${escapeHtml(l.text)}</div>`
+        )
+        .join('');
+      return `
     <div class="remark-card" data-id="${s.id}">
       <div class="remark-card-header">
         <strong>${formatDate(s.date)}</strong>
         <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span>
         <span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
       </div>
-      <p class="remark-text">${escapeHtml(s.remarques)}</p>
+      <div class="remark-text">${lines}</div>
       <button class="report-btn" data-action="reclamation" data-id="${s.id}">Télécharger le PDF</button>
-    </div>`
-    )
+    </div>`;
+    })
     .join('');
 }
 
@@ -544,6 +584,11 @@ function renderTable(pendingIds) {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>PDF</button>
+          ${
+            s.status === 'cloturee' && getNotifyEmail()
+              ? `<button class="send-btn" data-action="send-email" data-id="${s.id}" ${pending ? 'disabled title="Disponible après synchronisation"' : ''}>Envoyer</button>`
+              : ''
+          }
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
@@ -757,7 +802,6 @@ async function handleCloseSubmit(e) {
   await db.queueAction({ type: 'close', targetId: closingSessionId, payload, token: auth.token });
   document.getElementById('close-modal').hidden = true;
   await syncAndRender();
-  await notifyByEmailAfterClose(updated);
 }
 
 // ---------- Export PDF / email ----------
@@ -916,17 +960,22 @@ function getNotifyEmail() {
   return (localStorage.getItem(NOTIFY_EMAIL_KEY) || '').trim();
 }
 
-// À la clôture, si une adresse a été enregistrée : le serveur génère la fiche
-// PDF de la séance et l'envoie directement par email (SMTP), sans action de
-// l'instructeur. Échoue silencieusement hors ligne ou si le serveur n'a pas
-// de SMTP configuré — le PDF reste téléchargeable manuellement dans tous les cas.
+// Déclenché par le bouton "Envoyer" du Registre (séance clôturée, une fois
+// qu'une adresse a été enregistrée) : le serveur génère la fiche PDF de la
+// séance et l'envoie directement par email (SMTP). Le PDF reste
+// téléchargeable manuellement dans tous les cas via le bouton "PDF".
 async function notifyByEmailAfterClose(session) {
   const email = getNotifyEmail();
-  if (!email || !navigator.onLine) return;
+  if (!email) return;
+  if (!navigator.onLine) {
+    alert('Envoi impossible hors connexion.');
+    return;
+  }
   try {
     await apiFetch(`/api/sessions/${session.id}/email`, { method: 'POST', body: JSON.stringify({ to: email }) });
-  } catch {
-    // échec silencieux : le PDF individuel reste téléchargeable manuellement
+    alert(`Fiche envoyée à ${email}.`);
+  } catch (err) {
+    alert(err.message || "Échec de l'envoi par email.");
   }
 }
 
@@ -1135,6 +1184,10 @@ function bindEvents() {
     if (!btn) return;
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
+    if (btn.dataset.action === 'send-email') {
+      const session = sessions.find((s) => s.id === btn.dataset.id);
+      if (session) notifyByEmailAfterClose(session);
+    }
   });
 
   document.getElementById('remarks-list').addEventListener('click', (e) => {
@@ -1187,8 +1240,9 @@ function bindEvents() {
     }
     localStorage.setItem(NOTIFY_EMAIL_KEY, email);
     messageEl.textContent = email
-      ? 'Adresse enregistrée : un email sera envoyé automatiquement après chaque clôture.'
-      : 'Adresse supprimée : plus d\'envoi automatique après clôture.';
+      ? 'Adresse enregistrée : un bouton "Envoyer" apparaîtra dans le Registre pour chaque séance clôturée.'
+      : 'Adresse supprimée : le bouton "Envoyer" n\'apparaîtra plus dans le Registre.';
+    syncAndRender();
   });
   document.getElementById('bulk-email-btn').addEventListener('click', handleBulkEmailSend);
 

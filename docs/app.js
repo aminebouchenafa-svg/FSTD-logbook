@@ -166,6 +166,37 @@ function collectDefectRemarques() {
   return lines.join('\n');
 }
 
+const OTHER_REMARK_COLOR = '#64748b';
+const OTHER_REMARK_SOFT = 'rgba(100, 116, 139, 0.14)';
+
+// Reconstitue, à partir du texte brut stocké (voir collectDefectRemarques
+// ci-dessus), la catégorie et sa couleur pour chaque ligne de remarque —
+// afin d'afficher les titres avec les mêmes couleurs que l'accordéon de
+// clôture, aussi bien à l'écran que dans le PDF de signalement.
+function parseRemarkLines(remarques) {
+  if (!remarques) return [];
+  return remarques
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const catMatch = line.match(/^\[(.+?)\]\s*(.*)$/);
+      if (catMatch) {
+        const cat = DEFECT_CATEGORIES.find((c) => c.label === catMatch[1]);
+        return {
+          label: catMatch[1],
+          text: catMatch[2],
+          color: cat ? cat.color : OTHER_REMARK_COLOR,
+          soft: cat ? cat.soft : OTHER_REMARK_SOFT,
+        };
+      }
+      const otherMatch = line.match(/^Autre\s*:\s*(.*)$/i);
+      if (otherMatch) {
+        return { label: 'Autre', text: otherMatch[1], color: OTHER_REMARK_COLOR, soft: OTHER_REMARK_SOFT };
+      }
+      return { label: null, text: line, color: null, soft: null };
+    });
+}
+
 // ---------- IndexedDB ----------
 
 function openDb() {
@@ -364,18 +395,27 @@ function renderRemarksSection() {
   }
 
   container.innerHTML = withRemarks
-    .map(
-      (s) => `
+    .map((s) => {
+      const lines = parseRemarkLines(s.remarques)
+        .map((l) =>
+          l.label
+            ? `<div class="remark-line"><span class="remark-cat" style="color: ${l.color}">${escapeHtml(l.label)}</span>${
+                l.text ? ` : ${escapeHtml(l.text)}` : ''
+              }</div>`
+            : `<div class="remark-line">${escapeHtml(l.text)}</div>`
+        )
+        .join('');
+      return `
     <div class="remark-card" data-id="${s.id}">
       <div class="remark-card-header">
         <strong>${formatDate(s.date)}</strong>
         <span class="badge badge-lg ${badgeClass(s.creneau)}">${s.creneau}</span>
         <span class="badge badge-lg ${badgeClass(s.typeSeance)}">${s.typeSeance}</span>
       </div>
-      <p class="remark-text">${escapeHtml(s.remarques)}</p>
+      <div class="remark-text">${lines}</div>
       <button class="report-btn" data-action="reclamation" data-id="${s.id}">Télécharger le PDF</button>
-    </div>`
-    )
+    </div>`;
+    })
     .join('');
 }
 
@@ -457,6 +497,11 @@ function renderTable() {
       <td>
         <div class="row-actions">
           <button class="pdf-btn" data-action="pdf" data-id="${s.id}">PDF</button>
+          ${
+            s.status === 'cloturee' && getNotifyEmail()
+              ? `<button class="send-btn" data-action="send-email" data-id="${s.id}">Envoyer</button>`
+              : ''
+          }
           ${s.status === 'cloturee' ? '' : `<button class="delete-btn" data-action="delete" data-id="${s.id}">Suppr.</button>`}
         </div>
       </td>
@@ -656,7 +701,6 @@ async function handleCloseSubmit(e) {
   await putSession(updated);
   document.getElementById('close-modal').hidden = true;
   await renderAll();
-  await notifyByEmailAfterClose(updated);
 }
 
 // ---------- PDF (jsPDF, généré dans le navigateur) ----------
@@ -828,8 +872,17 @@ function drawSessionPdf(doc, session) {
   y += 7;
   doc.setFontSize(11);
   doc.setTextColor(20, 24, 40);
-  doc.text(doc.splitTextToSize(session.remarques || '—', 180), 14, y);
-  y += 15;
+  const remarquesLines = doc.splitTextToSize(session.remarques || '—', 180);
+  doc.text(remarquesLines, 14, y);
+  // La hauteur du bloc dépend du nombre de lignes réellement occupées : avec
+  // les remarques techniques structurées (plusieurs catégories cochées), le
+  // texte peut être bien plus long qu'une simple remarque libre — un
+  // décalage fixe faisait chevaucher la signature sur ce texte.
+  y += remarquesLines.length * 5 + 8;
+  if (y > 265) {
+    doc.addPage();
+    y = 20;
+  }
 
   if (session.signature) {
     doc.setFontSize(9.5);
@@ -874,11 +927,47 @@ function drawReclamationPdf(doc, session) {
   });
 
   y += 6;
-  drawLabelBadge(doc, 'Remarques / anomalie signalée', 14, y, '#00bcd4');
-  y += 12;
-  doc.setFontSize(12.5);
-  doc.setTextColor(20, 24, 40);
-  doc.text(doc.splitTextToSize(session.remarques || '—', 180), 14, y);
+  doc.setFontSize(11);
+  doc.setTextColor(100, 110, 130);
+  doc.text('Remarques / anomalies signalées', 14, y);
+  y += 9;
+
+  // Chaque catégorie de panne reprend la couleur de son badge dans
+  // l'accordéon de clôture, pour repérer le sous-système concerné d'un
+  // coup d'œil (même logique que drawLabelBadge pour les champs ci-dessus).
+  const remarkLines = parseRemarkLines(session.remarques);
+  if (remarkLines.length === 0) {
+    doc.setFontSize(12.5);
+    doc.setTextColor(20, 24, 40);
+    doc.text('—', 14, y);
+    y += 9;
+  } else {
+    remarkLines.forEach((l) => {
+      if (y > 265) {
+        doc.addPage();
+        y = 20;
+      }
+      if (l.label) {
+        drawLabelBadge(doc, l.label, 14, y, l.color);
+        y += 8;
+        if (l.text) {
+          doc.setFontSize(11.5);
+          doc.setTextColor(20, 24, 40);
+          const wrapped = doc.splitTextToSize(l.text, 170);
+          doc.text(wrapped, 18, y);
+          y += wrapped.length * 5 + 6;
+        } else {
+          y += 3;
+        }
+      } else {
+        doc.setFontSize(11.5);
+        doc.setTextColor(20, 24, 40);
+        const wrapped = doc.splitTextToSize(l.text, 180);
+        doc.text(wrapped, 14, y);
+        y += wrapped.length * 5 + 6;
+      }
+    });
+  }
 
   return y;
 }
@@ -982,11 +1071,12 @@ function computeBulkDateRange(mode, dateStr) {
   return { from: todayIso(monday), to: todayIso(sunday) };
 }
 
-// À la clôture, si une adresse a été enregistrée dans Administration : partage
-// (ou télécharge) la fiche PDF de la séance, puis ouvre Mail avec le
-// destinataire et le sujet déjà remplis. Le PDF n'est pas joint automatiquement
-// (aucune app web ne peut le faire via mailto:) — il vient d'être partagé/
-// téléchargé juste avant, il suffit de le joindre au message.
+// Déclenché par le bouton "Envoyer" du Registre (séance clôturée, une fois
+// qu'une adresse a été enregistrée dans Administration) : partage (ou
+// télécharge) la fiche PDF de la séance, puis ouvre Mail avec le destinataire
+// et le sujet déjà remplis. Le PDF n'est pas joint automatiquement (aucune
+// app web ne peut le faire via mailto:) — il vient d'être partagé/téléchargé
+// juste avant, il suffit de le joindre au message.
 async function notifyByEmailAfterClose(session) {
   const email = getNotifyEmail();
   if (!email) return;
@@ -1339,6 +1429,10 @@ function bindEvents() {
     if (!btn) return;
     if (btn.dataset.action === 'pdf') downloadSessionPdf(btn.dataset.id);
     if (btn.dataset.action === 'delete') deleteSession(btn.dataset.id);
+    if (btn.dataset.action === 'send-email') {
+      const session = sessions.find((s) => s.id === btn.dataset.id);
+      if (session) notifyByEmailAfterClose(session);
+    }
   });
 
   document.getElementById('remarks-list').addEventListener('click', (e) => {
@@ -1403,8 +1497,9 @@ function bindEvents() {
     }
     localStorage.setItem(NOTIFY_EMAIL_KEY, email);
     messageEl.textContent = email
-      ? 'Adresse enregistrée : Mail s\'ouvrira automatiquement après chaque clôture.'
-      : 'Adresse supprimée : plus d\'ouverture automatique de Mail après clôture.';
+      ? 'Adresse enregistrée : un bouton "Envoyer" apparaîtra dans le Registre pour chaque séance clôturée.'
+      : 'Adresse supprimée : le bouton "Envoyer" n\'apparaîtra plus dans le Registre.';
+    renderTable();
   });
   document.getElementById('bulk-email-btn').addEventListener('click', handleBulkEmailSend);
   document.getElementById('admin-body').addEventListener('click', (e) => {
