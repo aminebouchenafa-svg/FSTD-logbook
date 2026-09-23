@@ -1,7 +1,7 @@
 {
-  "name": "FSTD Logbook 737 NG",
+  "name": "FSTD Logbook",
   "short_name": "FSTD Logbook",
-  "description": "Registre des séances simulateur 737 NG : ouverture, chrono, clôture avec signature électronique et archivage PDF.",
+  "description": "Registre des séances simulateur : ouverture, chrono, clôture avec signature électronique et archivage PDF.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

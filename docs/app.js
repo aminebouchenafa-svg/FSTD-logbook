@@ -776,7 +776,7 @@ function drawPdfHeader(doc, x = 14, topY = 14) {
 
   doc.setFontSize(17);
   doc.setTextColor(20, 24, 40);
-  doc.text('FSTD Logbook 737 NG', textX, topY + 2);
+  doc.text('FSTD Logbook', textX, topY + 2);
   doc.setFontSize(11);
   doc.setTextColor(100, 110, 130);
   doc.text('Registre des séances simulateur', textX, topY + 9);
