@@ -8,6 +8,7 @@ const ADMIN_CODE = '737800';
 const AUTH_KEY = 'fstd_static_unlocked';
 const DB_NAME = 'fstd-logbook-static';
 const DB_VERSION = 1;
+const NOTIFY_EMAIL_KEY = 'fstd_notify_email';
 
 let sessions = [];
 let selectedIds = new Set();
@@ -655,6 +656,7 @@ async function handleCloseSubmit(e) {
   await putSession(updated);
   document.getElementById('close-modal').hidden = true;
   await renderAll();
+  await notifyByEmailAfterClose(updated);
 }
 
 // ---------- PDF (jsPDF, généré dans le navigateur) ----------
@@ -957,6 +959,36 @@ async function downloadSessionPdf(id) {
   const doc = new jsPDF();
   drawSessionPdf(doc, session);
   await shareOrDownloadPdfDoc(doc, `seance-${session.numero}.pdf`, 'Fiche de séance');
+}
+
+function getNotifyEmail() {
+  return (localStorage.getItem(NOTIFY_EMAIL_KEY) || '').trim();
+}
+
+// À la clôture, si une adresse a été enregistrée dans Administration : partage
+// (ou télécharge) la fiche PDF de la séance, puis ouvre Mail avec le
+// destinataire et le sujet déjà remplis. Le PDF n'est pas joint automatiquement
+// (aucune app web ne peut le faire via mailto:) — il vient d'être partagé/
+// téléchargé juste avant, il suffit de le joindre au message.
+async function notifyByEmailAfterClose(session) {
+  const email = getNotifyEmail();
+  if (!email) return;
+
+  const doc = new jsPDF();
+  drawSessionPdf(doc, session);
+  try {
+    await shareOrDownloadPdfDoc(doc, `seance-${session.numero}.pdf`, 'Fiche de séance');
+  } catch {
+    // Partage/téléchargement du PDF impossible : on ouvre quand même Mail.
+  }
+
+  const subject = `Fiche de séance simulateur n° ${session.numero} - ${formatDate(session.date)}`;
+  const body =
+    `Bonjour,\n\nVeuillez trouver ci-joint la fiche de la séance n° ${session.numero} du ${formatDate(session.date)} ` +
+    `(créneau ${session.creneau}, ${session.typeTraining}/${session.typeSeance}).\n\n` +
+    `Merci de joindre le PDF qui vient d'être partagé/téléchargé.\n\nCordialement.`;
+  window.location.href =
+    `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 async function downloadReclamationPdf(id) {
@@ -1280,10 +1312,24 @@ function bindEvents() {
     if (code === ADMIN_CODE) {
       document.getElementById('admin-lock').hidden = true;
       document.getElementById('admin-panel').hidden = false;
+      document.getElementById('notify-email').value = getNotifyEmail();
+      document.getElementById('notify-email-message').textContent = '';
       renderAdminTable();
     } else {
       document.getElementById('admin-error').textContent = 'Code incorrect.';
     }
+  });
+  document.getElementById('save-notify-email-btn').addEventListener('click', () => {
+    const email = document.getElementById('notify-email').value.trim();
+    const messageEl = document.getElementById('notify-email-message');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      messageEl.textContent = 'Adresse email invalide.';
+      return;
+    }
+    localStorage.setItem(NOTIFY_EMAIL_KEY, email);
+    messageEl.textContent = email
+      ? 'Adresse enregistrée : Mail s\'ouvrira automatiquement après chaque clôture.'
+      : 'Adresse supprimée : plus d\'ouverture automatique de Mail après clôture.';
   });
   document.getElementById('admin-body').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action="admin-delete"]');

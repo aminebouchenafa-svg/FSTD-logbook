@@ -1,6 +1,7 @@
 import * as db from './db.js';
 
 const AUTH_KEY = 'fstd_auth';
+const NOTIFY_EMAIL_KEY = 'fstd_notify_email';
 
 let auth = null; // { token, user: {id, name}, pinVerifier }
 let sessions = [];
@@ -756,6 +757,7 @@ async function handleCloseSubmit(e) {
   await db.queueAction({ type: 'close', targetId: closingSessionId, payload, token: auth.token });
   document.getElementById('close-modal').hidden = true;
   await syncAndRender();
+  await notifyByEmailAfterClose(updated);
 }
 
 // ---------- Export PDF / email ----------
@@ -907,6 +909,24 @@ async function downloadSessionPdf(id) {
     await shareOrDownloadResponse(res, `seance-${id}.pdf`, 'Fiche de séance');
   } catch (err) {
     alert(err.message);
+  }
+}
+
+function getNotifyEmail() {
+  return (localStorage.getItem(NOTIFY_EMAIL_KEY) || '').trim();
+}
+
+// À la clôture, si une adresse a été enregistrée : le serveur génère la fiche
+// PDF de la séance et l'envoie directement par email (SMTP), sans action de
+// l'instructeur. Échoue silencieusement hors ligne ou si le serveur n'a pas
+// de SMTP configuré — le PDF reste téléchargeable manuellement dans tous les cas.
+async function notifyByEmailAfterClose(session) {
+  const email = getNotifyEmail();
+  if (!email || !navigator.onLine) return;
+  try {
+    await apiFetch(`/api/sessions/${session.id}/email`, { method: 'POST', body: JSON.stringify({ to: email }) });
+  } catch {
+    // échec silencieux : le PDF individuel reste téléchargeable manuellement
   }
 }
 
@@ -1107,6 +1127,19 @@ function bindEvents() {
     if (file) await handleImportDataFile(file);
   });
 
+  document.getElementById('save-notify-email-btn').addEventListener('click', () => {
+    const email = document.getElementById('notify-email').value.trim();
+    const messageEl = document.getElementById('notify-email-message');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      messageEl.textContent = 'Adresse email invalide.';
+      return;
+    }
+    localStorage.setItem(NOTIFY_EMAIL_KEY, email);
+    messageEl.textContent = email
+      ? 'Adresse enregistrée : un email sera envoyé automatiquement après chaque clôture.'
+      : 'Adresse supprimée : plus d\'envoi automatique après clôture.';
+  });
+
   window.addEventListener('online', () => {
     updateSyncUi();
     syncAndRender();
@@ -1127,6 +1160,7 @@ async function init() {
   setupSignaturePad();
   bindEvents();
   renderDefectAccordion();
+  document.getElementById('notify-email').value = getNotifyEmail();
 
   auth = loadAuth();
   if (auth) {

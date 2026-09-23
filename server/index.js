@@ -156,6 +156,33 @@ app.get('/api/sessions/:id/reclamation-pdf', auth.requireAuth, async (req, res) 
   res.send(buffer);
 });
 
+// Envoie automatiquement la fiche PDF d'une séance par email, typiquement
+// juste après sa clôture (adresse enregistrée côté client dans Archivage).
+app.post('/api/sessions/:id/email', auth.requireAuth, async (req, res) => {
+  const { to } = req.body || {};
+  if (!to) return res.status(400).json({ errors: ['Adresse email destinataire obligatoire.'] });
+  const session = store.getSession(req.params.id);
+  if (!session) return res.status(404).json({ errors: ['Séance introuvable.'] });
+  try {
+    const buffer = await pdf.sessionPdfBuffer(session);
+    await mailer.sendPdfEmail({
+      to,
+      subject: `Fiche de séance simulateur n° ${session.numero} - ${session.date}`,
+      text: 'Veuillez trouver ci-joint la fiche de la séance simulateur.',
+      filename: `seance-${session.numero}.pdf`,
+      buffer,
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.message === 'SMTP_NOT_CONFIGURED') {
+      return res.status(501).json({
+        errors: ["L'envoi d'email n'est pas configuré sur ce serveur (variables SMTP_HOST/SMTP_USER/SMTP_PASS manquantes)."],
+      });
+    }
+    res.status(500).json({ errors: ["Échec de l'envoi de l'email."] });
+  }
+});
+
 app.get('/api/export/pdf', auth.requireAuth, async (req, res) => {
   const { from, to, ids } = req.query;
   let sessions = store.listSessions();

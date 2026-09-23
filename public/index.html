@@ -168,6 +168,20 @@
           <button type="button" id="import-json-btn" class="secondary">Importer (JSON)</button>
           <input type="file" id="import-json-input" accept="application/json,.json" hidden />
         </div>
+
+        <p class="hint">
+          Si une adresse est enregistrée ici, la fiche PDF de chaque séance sera
+          envoyée automatiquement par email à cette adresse dès qu'une séance
+          est clôturée (nécessite un serveur SMTP configuré).
+        </p>
+        <div class="export-row">
+          <label class="grow">
+            Adresse email de destination
+            <input type="email" id="notify-email" placeholder="formation@compagnie.com" />
+          </label>
+          <button type="button" id="save-notify-email-btn" class="secondary">Enregistrer</button>
+        </div>
+        <p id="notify-email-message" class="hint"></p>
       </section>
     </main>
 

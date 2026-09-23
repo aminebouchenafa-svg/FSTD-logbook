@@ -222,6 +222,22 @@
           <input type="file" id="import-json-input" accept="application/json,.json" hidden />
         </div>
 
+        <h2>Notification par email</h2>
+        <p class="hint">
+          Si une adresse est enregistrée ici, la fiche PDF de chaque séance sera
+          partagée/téléchargée puis Mail s'ouvrira automatiquement vers cette
+          adresse (sujet pré-rempli) dès qu'une séance est clôturée — il suffira
+          de joindre le PDF et d'envoyer.
+        </p>
+        <div class="export-row">
+          <label class="grow">
+            Adresse email de destination
+            <input type="email" id="notify-email" placeholder="formation@compagnie.com" />
+          </label>
+          <button type="button" id="save-notify-email-btn" class="secondary">Enregistrer</button>
+        </div>
+        <p id="notify-email-message" class="hint"></p>
+
         <div class="modal-actions">
           <button type="button" class="secondary" data-close-modal>Fermer</button>
         </div>
