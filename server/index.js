@@ -183,6 +183,42 @@ app.post('/api/sessions/:id/email', auth.requireAuth, async (req, res) => {
   }
 });
 
+// Regroupe les fiches PDF des séances clôturées d'une période (jour ou
+// semaine, calculée côté client) en un seul PDF et l'envoie par email.
+app.post('/api/sessions/bulk-email', auth.requireAuth, async (req, res) => {
+  const { to, from, toDate } = req.body || {};
+  if (!to) return res.status(400).json({ errors: ['Adresse email destinataire obligatoire.'] });
+  if (!from || !toDate) return res.status(400).json({ errors: ['Période (from/toDate) obligatoire.'] });
+
+  const matching = store.listSessions().filter((s) => s.date >= from && s.date <= toDate && s.status === 'cloturee');
+  if (matching.length === 0) {
+    return res.status(400).json({ errors: ['Aucune séance clôturée sur cette période.'] });
+  }
+  matching.sort((a, b) => (a.date === b.date ? (a.heureDebut || '').localeCompare(b.heureDebut || '') : (a.date < b.date ? -1 : 1)));
+
+  const frDate = (iso) => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  const label = from === toDate ? frDate(from) : `semaine du ${frDate(from)} au ${frDate(toDate)}`;
+
+  try {
+    const buffer = await pdf.sessionsPdfBuffer(matching);
+    await mailer.sendPdfEmail({
+      to,
+      subject: `Fiches de séances simulateur - ${label}`,
+      text: `Veuillez trouver ci-joint les fiches de ${matching.length} séance(s) (${label}).`,
+      filename: from === toDate ? `fiches-${from}.pdf` : `fiches-semaine-${from}-au-${toDate}.pdf`,
+      buffer,
+    });
+    res.json({ ok: true, count: matching.length });
+  } catch (err) {
+    if (err.message === 'SMTP_NOT_CONFIGURED') {
+      return res.status(501).json({
+        errors: ["L'envoi d'email n'est pas configuré sur ce serveur (variables SMTP_HOST/SMTP_USER/SMTP_PASS manquantes)."],
+      });
+    }
+    res.status(500).json({ errors: ["Échec de l'envoi de l'email."] });
+  }
+});
+
 app.get('/api/export/pdf', auth.requireAuth, async (req, res) => {
   const { from, to, ids } = req.query;
   let sessions = store.listSessions();

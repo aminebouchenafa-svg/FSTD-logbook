@@ -930,6 +930,57 @@ async function notifyByEmailAfterClose(session) {
   }
 }
 
+// Lundi-dimanche de la semaine contenant dateStr (ISO), ou le jour seul.
+function computeBulkDateRange(mode, dateStr) {
+  if (mode !== 'week') return { from: dateStr, to: dateStr };
+  const d = new Date(`${dateStr}T00:00:00`);
+  const day = d.getDay();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return { from: todayIso(monday), to: todayIso(sunday) };
+}
+
+// Regroupe en un seul PDF (côté serveur) les fiches des séances clôturées
+// d'un jour ou d'une semaine, et l'envoie par email à l'adresse enregistrée.
+async function handleBulkEmailSend() {
+  const messageEl = document.getElementById('bulk-email-message');
+  messageEl.textContent = '';
+
+  const email = getNotifyEmail();
+  if (!email) {
+    messageEl.textContent = 'Enregistrez une adresse email de destination ci-dessus avant d\'envoyer.';
+    return;
+  }
+  const dateStr = document.getElementById('bulk-email-date').value;
+  if (!dateStr) {
+    messageEl.textContent = 'Choisissez une date.';
+    return;
+  }
+  if (!navigator.onLine) {
+    messageEl.textContent = 'Envoi impossible hors connexion.';
+    return;
+  }
+
+  const mode = document.getElementById('bulk-email-mode').value;
+  const { from, to } = computeBulkDateRange(mode, dateStr);
+  const periodLabel = mode === 'week' ? `semaine du ${formatDate(from)} au ${formatDate(to)}` : formatDate(from);
+  if (!confirm(`Envoyer les fiches clôturées de la ${mode === 'week' ? periodLabel : 'journée du ' + periodLabel} à ${email} ?`)) return;
+
+  try {
+    const res = await apiFetch('/api/sessions/bulk-email', { method: 'POST', body: JSON.stringify({ to: email, from, toDate: to }) });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      messageEl.textContent = (body.errors || []).join('\n') || "Échec de l'envoi.";
+      return;
+    }
+    messageEl.textContent = `${body.count} fiche(s) envoyée(s) par email (${periodLabel}).`;
+  } catch {
+    messageEl.textContent = "Échec de l'envoi (réseau indisponible).";
+  }
+}
+
 async function downloadReclamationPdf(id) {
   const res = await apiFetch(`/api/sessions/${id}/reclamation-pdf`);
   try {
@@ -1139,6 +1190,7 @@ function bindEvents() {
       ? 'Adresse enregistrée : un email sera envoyé automatiquement après chaque clôture.'
       : 'Adresse supprimée : plus d\'envoi automatique après clôture.';
   });
+  document.getElementById('bulk-email-btn').addEventListener('click', handleBulkEmailSend);
 
   window.addEventListener('online', () => {
     updateSyncUi();
@@ -1161,6 +1213,7 @@ async function init() {
   bindEvents();
   renderDefectAccordion();
   document.getElementById('notify-email').value = getNotifyEmail();
+  document.getElementById('bulk-email-date').value = todayIso();
 
   auth = loadAuth();
   if (auth) {

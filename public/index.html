@@ -182,6 +182,27 @@
           <button type="button" id="save-notify-email-btn" class="secondary">Enregistrer</button>
         </div>
         <p id="notify-email-message" class="hint"></p>
+
+        <p class="hint">
+          Regroupe les fiches PDF des séances clôturées d'un jour ou d'une
+          semaine en un seul PDF et l'envoie directement (par email, SMTP)
+          à l'adresse enregistrée ci-dessus.
+        </p>
+        <div class="export-row">
+          <label>
+            Période
+            <select id="bulk-email-mode">
+              <option value="day">Jour</option>
+              <option value="week">Semaine</option>
+            </select>
+          </label>
+          <label>
+            Date
+            <input type="date" id="bulk-email-date" />
+          </label>
+          <button type="button" id="bulk-email-btn" class="secondary">Envoyer</button>
+        </div>
+        <p id="bulk-email-message" class="hint"></p>
       </section>
     </main>
 

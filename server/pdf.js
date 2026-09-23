@@ -133,10 +133,10 @@ function drawField(doc, x, y, label, value, color) {
   return y + 42;
 }
 
-async function sessionPdfBuffer(session) {
-  const doc = new PDFDocument({ margin: 50 });
-  const bufferPromise = bufferFromDoc(doc);
-
+// Dessine la fiche complète d'une séance dans le document courant (à la
+// position/page en cours), pour être réutilisable aussi bien pour un PDF
+// à une seule séance que pour un PDF regroupant plusieurs fiches.
+function drawSessionFiche(doc, session) {
   drawHeader(doc, `Fiche de séance n° ${session.numero}`);
 
   const col1 = doc.page.margins.left;
@@ -184,7 +184,25 @@ async function sessionPdfBuffer(session) {
       doc.fontSize(10).fillColor('#101828').text('(signature illisible)');
     }
   }
+}
 
+async function sessionPdfBuffer(session) {
+  const doc = new PDFDocument({ margin: 50 });
+  const bufferPromise = bufferFromDoc(doc);
+  drawSessionFiche(doc, session);
+  doc.end();
+  return bufferPromise;
+}
+
+// Regroupe les fiches complètes de plusieurs séances en un seul PDF (une
+// fiche par page), pour l'envoi groupé jour/semaine depuis Administration.
+async function sessionsPdfBuffer(sessionsToInclude) {
+  const doc = new PDFDocument({ margin: 50 });
+  const bufferPromise = bufferFromDoc(doc);
+  sessionsToInclude.forEach((session, i) => {
+    if (i > 0) doc.addPage();
+    drawSessionFiche(doc, session);
+  });
   doc.end();
   return bufferPromise;
 }
@@ -295,4 +313,4 @@ async function registryPdfBuffer(sessions, { from, to } = {}) {
   return bufferPromise;
 }
 
-module.exports = { sessionPdfBuffer, reclamationPdfBuffer, registryPdfBuffer };
+module.exports = { sessionPdfBuffer, sessionsPdfBuffer, reclamationPdfBuffer, registryPdfBuffer };
