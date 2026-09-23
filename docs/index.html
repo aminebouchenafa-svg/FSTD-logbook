@@ -238,6 +238,27 @@
         </div>
         <p id="notify-email-message" class="hint"></p>
 
+        <h2>Envoi groupé (jour ou semaine)</h2>
+        <p class="hint">
+          Regroupe les fiches PDF des séances clôturées d'un jour ou d'une semaine
+          en un seul PDF, puis l'envoie (comme ci-dessus) à l'adresse enregistrée.
+        </p>
+        <div class="export-row">
+          <label>
+            Période
+            <select id="bulk-email-mode">
+              <option value="day">Jour</option>
+              <option value="week">Semaine</option>
+            </select>
+          </label>
+          <label>
+            Date
+            <input type="date" id="bulk-email-date" />
+          </label>
+          <button type="button" id="bulk-email-btn" class="secondary">Préparer et envoyer</button>
+        </div>
+        <p id="bulk-email-message" class="hint"></p>
+
         <div class="modal-actions">
           <button type="button" class="secondary" data-close-modal>Fermer</button>
         </div>

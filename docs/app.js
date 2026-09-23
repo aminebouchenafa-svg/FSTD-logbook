@@ -965,6 +965,23 @@ function getNotifyEmail() {
   return (localStorage.getItem(NOTIFY_EMAIL_KEY) || '').trim();
 }
 
+function openMailto(email, subject, body) {
+  window.location.href =
+    `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Lundi-dimanche de la semaine contenant dateStr (ISO), ou le jour seul.
+function computeBulkDateRange(mode, dateStr) {
+  if (mode !== 'week') return { from: dateStr, to: dateStr };
+  const d = new Date(`${dateStr}T00:00:00`);
+  const day = d.getDay();
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return { from: todayIso(monday), to: todayIso(sunday) };
+}
+
 // À la clôture, si une adresse a été enregistrée dans Administration : partage
 // (ou télécharge) la fiche PDF de la séance, puis ouvre Mail avec le
 // destinataire et le sujet déjà remplis. Le PDF n'est pas joint automatiquement
@@ -987,8 +1004,64 @@ async function notifyByEmailAfterClose(session) {
     `Bonjour,\n\nVeuillez trouver ci-joint la fiche de la séance n° ${session.numero} du ${formatDate(session.date)} ` +
     `(créneau ${session.creneau}, ${session.typeTraining}/${session.typeSeance}).\n\n` +
     `Merci de joindre le PDF qui vient d'être partagé/téléchargé.\n\nCordialement.`;
-  window.location.href =
-    `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  openMailto(email, subject, body);
+}
+
+// Regroupe en un seul PDF les fiches complètes des séances clôturées d'un
+// jour ou d'une semaine, puis le partage/télécharge et ouvre Mail vers
+// l'adresse enregistrée (mêmes limites que notifyByEmailAfterClose : le
+// PDF doit être joint manuellement).
+async function handleBulkEmailSend() {
+  const mode = document.getElementById('bulk-email-mode').value;
+  const dateStr = document.getElementById('bulk-email-date').value;
+  const messageEl = document.getElementById('bulk-email-message');
+  messageEl.textContent = '';
+
+  if (!dateStr) {
+    messageEl.textContent = 'Choisissez une date.';
+    return;
+  }
+
+  const { from, to } = computeBulkDateRange(mode, dateStr);
+  const matching = sessions.filter((s) => s.date >= from && s.date <= to);
+  const closedOnes = matching
+    .filter((s) => s.status === 'cloturee')
+    .sort((a, b) => (a.date === b.date ? (a.heureDebut || '').localeCompare(b.heureDebut || '') : (a.date < b.date ? -1 : 1)));
+  const openCount = matching.length - closedOnes.length;
+
+  if (closedOnes.length === 0) {
+    messageEl.textContent = 'Aucune séance clôturée sur cette période.';
+    return;
+  }
+
+  const periodLabel = mode === 'week' ? `semaine du ${formatDate(from)} au ${formatDate(to)}` : formatDate(from);
+  const confirmMsg = openCount > 0
+    ? `Préparer ${closedOnes.length} fiche(s) clôturée(s) (${periodLabel}) ? ${openCount} séance(s) encore ouverte(s) sur cette période seront ignorées.`
+    : `Préparer ${closedOnes.length} fiche(s) (${periodLabel}) ?`;
+  if (!confirm(confirmMsg)) return;
+
+  const doc = new jsPDF();
+  closedOnes.forEach((s, i) => {
+    if (i > 0) doc.addPage();
+    drawSessionPdf(doc, s);
+  });
+  const filename = mode === 'week' ? `fiches-semaine-${from}-au-${to}.pdf` : `fiches-${from}.pdf`;
+  try {
+    await shareOrDownloadPdfDoc(doc, filename, 'Fiches de séances');
+  } catch {
+    // Partage/téléchargement impossible : on tente quand même d'ouvrir Mail.
+  }
+
+  const email = getNotifyEmail();
+  if (!email) {
+    messageEl.textContent = `${closedOnes.length} fiche(s) préparée(s). Renseignez une adresse ci-dessus pour ouvrir Mail automatiquement.`;
+    return;
+  }
+  const subject = `Fiches de séances simulateur - ${periodLabel}`;
+  const body =
+    `Bonjour,\n\nVeuillez trouver ci-joint les fiches de ${closedOnes.length} séance(s) (${periodLabel}).\n\n` +
+    `Merci de joindre le PDF qui vient d'être partagé/téléchargé.\n\nCordialement.`;
+  openMailto(email, subject, body);
 }
 
 async function downloadReclamationPdf(id) {
@@ -1314,6 +1387,8 @@ function bindEvents() {
       document.getElementById('admin-panel').hidden = false;
       document.getElementById('notify-email').value = getNotifyEmail();
       document.getElementById('notify-email-message').textContent = '';
+      document.getElementById('bulk-email-date').value = todayIso();
+      document.getElementById('bulk-email-message').textContent = '';
       renderAdminTable();
     } else {
       document.getElementById('admin-error').textContent = 'Code incorrect.';
@@ -1331,6 +1406,7 @@ function bindEvents() {
       ? 'Adresse enregistrée : Mail s\'ouvrira automatiquement après chaque clôture.'
       : 'Adresse supprimée : plus d\'ouverture automatique de Mail après clôture.';
   });
+  document.getElementById('bulk-email-btn').addEventListener('click', handleBulkEmailSend);
   document.getElementById('admin-body').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action="admin-delete"]');
     if (btn) handleAdminDelete(btn.dataset.id);
